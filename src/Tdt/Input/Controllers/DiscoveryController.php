@@ -72,13 +72,13 @@ class DiscoveryController extends \Controller
         $extract_types = array();
 
         // Fetch all the supported extract models by iterating the models/extract directory
-        if ($handle = opendir(__DIR__ . '/../../../models/extract')) {
+        if ($handle = opendir(__DIR__ . '/../../../models/Extract')) {
             while (false !== ($entry = readdir($handle))) {
 
                 // Skip the . and .. directory
                 if (preg_match("/(.+)\.php/", $entry, $matches)) {
 
-                    $model = 'extract\\' . $matches[1];
+                    $model = 'Extract\\' . $matches[1];
                     $type = strtolower($matches[1]);
 
 
@@ -103,13 +103,14 @@ class DiscoveryController extends \Controller
         $map_types = array();
 
         // Fetch all the supported map models by iterating the models/map directory
-        if ($handle = opendir(__DIR__ . '/../../../models/map')) {
+        if ($handle = opendir(__DIR__ . '/../../../models/Map')) {
+
             while (false !== ($entry = readdir($handle))) {
 
                 // Skip the . and .. directory
                 if (preg_match("/(.+)\.php/", $entry, $matches)) {
 
-                    $model = 'map\\' . $matches[1];
+                    $model = 'Map\\' . $matches[1];
                     $type = strtolower($matches[1]);
 
 
@@ -134,13 +135,13 @@ class DiscoveryController extends \Controller
         $load_types = array();
 
         // Fetch all the supported load models by iterating the models/load directory
-        if ($handle = opendir(__DIR__ . '/../../../models/load')) {
+        if ($handle = opendir(__DIR__ . '/../../../models/Load')) {
             while (false !== ($entry = readdir($handle))) {
 
                 // Skip the . and .. directory
                 if (preg_match("/(.+)\.php/", $entry, $matches)) {
 
-                    $model = 'load\\' . $matches[1];
+                    $model = 'Load\\' . $matches[1];
                     $type = strtolower($matches[1]);
 
 

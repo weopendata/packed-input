@@ -74,6 +74,8 @@ class Csv extends AExtractor
 
         $this->log("Extracted data from row $this->row_index");
 
+        $this->row_index++;
+
         return $row;
     }
 

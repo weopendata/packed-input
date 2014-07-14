@@ -126,9 +126,11 @@ class InputController extends \Controller
         $type = @$params['type'];
         $type = ucfirst(mb_strtolower($type));
 
+        $ns = ucfirst(mb_strtolower($ns));
+
         // Map and publish are not obligatory
         if (empty($type)) {
-            if ($ns != 'map' && $ns != 'publish') {
+            if ($ns != 'Map' && $ns != 'Publish') {
                 \App::abort(400, "No type of $ns was given, please provide a type of $ns which are listed in the discovery document.");
             } else {
                 return;

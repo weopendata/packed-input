@@ -73,7 +73,7 @@ class JobExecuter
         $this->log("Started executing the job identified by $id at $timestamp.");
 
         // While the extractor reads chunks, keep executing the eml sequence
-        $count_triples = 0;
+        $loadedChunks = 0;
         $count_chunks = 0;
 
         while ($extractor->hasNext()) {
@@ -92,15 +92,14 @@ class JobExecuter
                 }
 
                 // Perform the loader processing
-                $loader->execute($chunk);
+                $result = $loader->execute($chunk);
 
-                // Cumulate the amount of triples
-                if (!empty($chunk)) {
-                    $count_triples += $chunk->countTriples();
+                if ($result) {
+                    $loadedChunks++;
                 }
-            } else {
-                $this->log("Empty chunk retrieved from the extractor, previous chunk count was $count_chunks.");
 
+            } else {
+                $this->log("Empty chunk retrieved from the extractor, previous chunk count was $loadedChunks.");
             }
         }
 
@@ -109,7 +108,7 @@ class JobExecuter
 
         $duration = round(microtime(true) - $start, 2);
 
-        $this->log("Extracted a total of $count_chunks chunks from the source file, loaded a total of $count_triples triples  in " . $duration . " seconds.");
+        $this->log("Extracted a total of $count_chunks chunks from the source file and were loaded into the back-end.");
 
         // Execute the publisher if present ( optional )
         if (!empty($publisher)) {
