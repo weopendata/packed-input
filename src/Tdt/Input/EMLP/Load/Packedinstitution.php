@@ -37,15 +37,13 @@ class Packedinstitution extends ALoader
         // The mongo library allows hierarchical model assignment, but only
         // if the top level properties are declared as such.
 
-        $wikidata = $chunk['Wikidata'];
+        $institution = \Packed\Institution::create([]);
 
-        unset($chunk['Wikidata']);
+        foreach ($chunk as $key => $value) {
+            $institution->$key = $value;
+        }
 
-        $artist = \Packed\Institution::create($chunk);
-
-        $artist->wikidata = $wikidata;
-
-        $result = $artist->save();
+        $result = $institution->save();
 
         if ($result) {
             $this->log('Successfully loaded the data into the NoSQL.');

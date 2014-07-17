@@ -5,7 +5,8 @@ namespace Map;
 use Eloquent;
 
 /**
- * Rdf mapper model
+ * Packed artist model
+ *
  * @copyright (C) 2011,2013 by OKFN Belgium vzw/asbl
  * @license AGPLv3
  * @author Jan Vansteenlandt <jan@okfn.be>
@@ -47,7 +48,7 @@ class Packedartist extends Eloquent
     public static function getCreateValidators()
     {
         return array(
-
+            'data_provider' => 'required'
         );
     }
 
@@ -57,6 +58,10 @@ class Packedartist extends Eloquent
     public static function getCreateProperties()
     {
         return array(
+            'data_provider' => array(
+                    'required' => true,
+                    'description' => 'The name of the provider of the data.',
+            ),
         );
     }
 }

@@ -7,7 +7,6 @@ use GuzzleHttp\Exception\RequestException;
 
 class Packedinstitution extends AMapper
 {
-
     public function __construct($model, $command)
     {
         parent::__construct($model, $command);
@@ -31,9 +30,40 @@ class Packedinstitution extends AMapper
         // Choose the first value of the chunk as an identifier to perform some logging
         $id = reset($chunk);
 
+        // Certain values of the chunk need to be split on the base of a semi-colon
+        $multiValues = array(
+                        'workPid',
+                        'title',
+                        'creator',
+                        'creatorId',
+                        'objectName',
+                        'objectNameId',
+                        'dateStartPrecision',
+                        'dateStartValue',
+                        'dateEndPrecision',
+                        'dateEndValue',
+                        'dateIso8601'
+                    );
+
+        foreach ($multiValues as $key) {
+
+            if (array_key_exists($key, $chunk)) {
+                if (!empty($chunk[$key])) {
+
+                    $chunk[$key] = explode(';', $chunk[$key]);
+                } else {
+
+                    $chunk[$key] = array();
+                }
+            }
+        }
+
+        // Add the original data provider
+        $chunk['dataprovider'] = $this->mapper->data_provider;
+
         $this->log('------   Mapping data  ------');
 
-        $timeout = 5;
+        $timeout = 1;
 
         $this->log("Enriching data for chunk identified by $id, waiting $timeout seconds before starting HTTP requests.");
 
@@ -48,8 +78,6 @@ class Packedinstitution extends AMapper
 
     /**
      * Enrich the data in the chunk with data from WikiData data source
-     *
-     * TODO
      *
      * @param array $chunk
      *

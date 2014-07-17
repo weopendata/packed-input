@@ -36,20 +36,12 @@ class Packedartist extends ALoader
 
         // The mongo library allows hierarchical model assignment, but only
         // if the top level properties are declared as such.
+        $artist = \Packed\Artist::create([]);
 
-        $viaf = $chunk['VIAF'];
-        $rkd = $chunk['RKD'];
-        $wikidata = $chunk['Wikidata'];
-
-        unset($chunk['VIAF']);
-        unset($chunk['RKD']);
-        unset($chunk['Wikidata']);
-
-        $artist = \Packed\Artist::create($chunk);
-
-        $artist->viaf = $viaf;
-        $artist->rkd = $rkd;
-        $artist->wikidata = $wikidata;
+        // Every property is an array
+        foreach ($chunk as $key => $value) {
+            $artist->$key = $value;
+        }
 
         $result = $artist->save();
 

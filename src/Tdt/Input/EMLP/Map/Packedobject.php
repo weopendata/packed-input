@@ -30,6 +30,19 @@ class Packedobject extends AMapper
         // Choose the first value of the chunk as an identifier to perform some logging
         $id = reset($chunk);
 
+        // All values are possible multi values
+        foreach ($chunk as $key => $value) {
+
+            if (!empty($value)) {
+                $chunk[$key] = explode(';', $value);
+            } else {
+                $chunk[$key] = array();
+            }
+        }
+
+        // Add the original data provider
+        $chunk['dataprovider'] = $this->mapper->data_provider;
+
         $this->log('------   Mapping data  ------');
 
         $timeout = 0;
@@ -58,14 +71,13 @@ class Packedobject extends AMapper
     {
         if (!empty($chunk['objectNameAatPid'])) {
 
-            $chunk['AAT'] = array('preferredNames' => array(), 'nonPreferredNames' => array());
+            $chunk['AAT'] = array(
+                                'preferredNames' => array(),
+                                'nonPreferredNames' => array(),
+                                'note' => array(),
+                            );
 
-            $links = $chunk['objectNameAatPid'];
-
-            // The pid can have several links towards AAT feeds separated by a semi-colon
-            $links = explode(';', $links);
-
-            foreach ($links as $link) {
+            foreach ($chunk['objectNameAatPid'] as $link) {
 
                 try {
 
@@ -89,7 +101,7 @@ class Packedobject extends AMapper
 
                         $this->log('Failed to get data from the link: ' . $link . '.rdf', 'error');
 
-                        break;
+                        continue;
                     }
 
                 } catch (\EasyRdf_Exception $ex) {
@@ -102,7 +114,7 @@ class Packedobject extends AMapper
                         $this->log("The rdf data we've gotten was: $rdf");
                     }
 
-                    break;
+                    continue;
                 }
 
                 // Fetch the nl scope note
@@ -115,7 +127,8 @@ class Packedobject extends AMapper
 
                     if (!empty($note)) {
 
-                        $chunk['AAT']['note'] = $note->getValue();
+                        array_push($chunk['AAT']['note'], $note->getValue());
+
                         break;
                     }
                 }
@@ -181,7 +194,7 @@ class Packedobject extends AMapper
                     $this->log("Found no skos:Concept to extract label data from!");
                 }
 
-                sleep(1);
+                sleep(0.5);
             }
         } else {
             $this->log("No link found to an AAT feed.");

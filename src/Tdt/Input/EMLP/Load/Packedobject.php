@@ -37,15 +37,13 @@ class Packedobject extends ALoader
         // The mongo library allows hierarchical model assignment, but only
         // if the top level properties are declared as such.
 
-        $aat = @$chunk['AAT'];
+        $object = \Packed\Object::create([]);
 
-        unset($chunk['AAT']);
+        foreach ($chunk as $key => $value) {
+            $object->$key = $value;
+        }
 
-        $artist = \Packed\Object::create($chunk);
-
-        $artist->aat = $aat;
-
-        $result = $artist->save();
+        $result = $object->save();
 
         if ($result) {
             $this->log('Successfully loaded the data into the NoSQL.');
