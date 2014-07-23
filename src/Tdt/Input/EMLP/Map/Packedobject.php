@@ -45,7 +45,9 @@ class Packedobject extends AMapper
 
         $this->log('------   Mapping data  ------');
 
-        $timeout = 0.1;
+        $rand = (rand(100, 200) / 2) / 100;
+
+        $timeout = 0.5 + $rand;
 
         $this->log("Enriching data for chunk identified by $id, waiting $timeout seconds before starting HTTP requests.");
 
@@ -95,7 +97,11 @@ class Packedobject extends AMapper
 
                     $ch = curl_init();
 
-                    curl_setopt($ch, CURLOPT_URL, 'http://vocab.getty.edu/download/rdf?uri=' . $link . '.rdf');
+                    $uri = 'http://vocab.getty.edu/download/rdf?uri=' . $link . '.rdf';
+
+                    $this->log('Fetching semantic data from link ' . $uri);
+
+                    curl_setopt($ch, CURLOPT_URL, $uri);
                     curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
                     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 

@@ -17,3 +17,7 @@ Route::get('api/stats/artists/{data_provider?}', 'Tdt\Input\Controllers\ArtistSt
 Route::get('api/stats/objects/{data_provider?}', 'Tdt\Input\Controllers\ObjectStatController@handle')
 
 ->where('museum', '[a-zA-Z]+');
+
+Route::get('api/stats/institutions/{data_provider?}', 'Tdt\Input\Controllers\InstitutionStatController@handle')
+
+->where('museum', '[a-zA-Z]+');

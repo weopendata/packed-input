@@ -21,7 +21,7 @@ abstract class StatController extends \Controller
 
     protected static $DB_NAME = 'packed';
 
-    protected static $ARTIST_COLLECTION = '';
+    protected static $COLLECTION = '';
 
     abstract public function handle($dataProvider = null);
 

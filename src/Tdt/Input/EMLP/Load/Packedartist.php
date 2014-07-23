@@ -21,7 +21,7 @@ class Packedartist extends ALoader
     public function init()
     {
         // Clear all existing artists from the respective data provider
-        $data_provider = $this->model->data_provider;
+        $data_provider = $this->loader->data_provider;
 
         $mongoConfig = \Config::get('database.connections.mongodb');
 

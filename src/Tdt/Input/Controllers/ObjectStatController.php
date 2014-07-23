@@ -164,7 +164,7 @@ class ObjectStatController extends StatController
     }
 
     /**
-     * Count the multilingual additions overall (no unique)
+     * Count the multilingual additions overall (not unique)
      *
      * @param MongoCollection $objects
      * @param string          $lang

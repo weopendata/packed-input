@@ -2,6 +2,8 @@
 
 namespace Tdt\Input\EMLP\Load;
 
+use MongoClient;
+
 /**
  * Load data into a MongoDB datastore
  */
@@ -19,7 +21,7 @@ class Packedinstitution extends ALoader
     public function init()
     {
         // Clear all existing institutions from the respective data provider
-        $data_provider = $this->model->data_provider;
+        $data_provider = $this->loader->data_provider;
 
         $mongoConfig = \Config::get('database.connections.mongodb');
 
