@@ -16,7 +16,7 @@ class Packedobject extends Eloquent
 
     protected $table = 'input_packedload';
 
-    protected $fillable = array();
+    protected $fillable = array('data_provider');
 
     /**
      * Relationship with Job
@@ -53,7 +53,7 @@ class Packedobject extends Eloquent
     public static function getCreateValidators()
     {
         return array(
-
+            'data_provider' => 'required',
         );
     }
 
@@ -64,7 +64,10 @@ class Packedobject extends Eloquent
     {
 
         return array(
-
+            'data_provider' => array(
+                'required' => true,
+                'description' => 'The name of the provider of the data.',
+            ),
         );
     }
 }

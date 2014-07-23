@@ -14,19 +14,28 @@ namespace Tdt\Input\Controllers;
 use Packed\Artist;
 use Packed\Institution;
 use Packed\Object;
+use MongoClient;
 
-class StatController extends \Controller
+abstract class StatController extends \Controller
 {
 
-    public function handle($dataProvider)
+    protected static $DB_NAME = 'packed';
+
+    protected static $ARTIST_COLLECTION = '';
+
+    abstract public function handle($dataProvider = null);
+
+    /**
+     * Set up and return a mongo client
+     *
+     * @return MongoClient
+     */
+    protected function getMongoClient()
     {
+        $mongoConfig = \Config::get('database.connections.mongodb');
 
-        // Fetch information about the artists
+        $connString = 'mongodb://' . $mongoConfig['host'] . ':' . $mongoConfig['port'];
 
-        // How many unique strings were delivered by the provider
-        // Note: We don't take into account the links to the 3rd party data
-
-
-        return "hi";
+        return new MongoClient($connString);
     }
 }

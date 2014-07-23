@@ -45,7 +45,7 @@ class Packedobject extends AMapper
 
         $this->log('------   Mapping data  ------');
 
-        $timeout = 0;
+        $timeout = 0.1;
 
         $this->log("Enriching data for chunk identified by $id, waiting $timeout seconds before starting HTTP requests.");
 
@@ -72,8 +72,18 @@ class Packedobject extends AMapper
         if (!empty($chunk['objectNameAatPid'])) {
 
             $chunk['AAT'] = array(
-                                'preferredNames' => array(),
-                                'nonPreferredNames' => array(),
+                                'preferredNames' => array(
+                                    'nl' => array(),
+                                    'en' => array(),
+                                    'fr' => array(),
+                                    'de' => array(),
+                                ),
+                                'nonPreferredNames' => array(
+                                    'nl' => array(),
+                                    'en' => array(),
+                                    'fr' => array(),
+                                    'de' => array(),
+                                ),
                                 'note' => array(),
                             );
 
@@ -145,50 +155,50 @@ class Packedobject extends AMapper
                     $prefLabelNl = $skosConcept->getLiteral('skos:prefLabel', 'nl');
 
                     if (!empty($prefLabelNl)) {
-                        array_push($chunk['AAT']['preferredNames'], $prefLabelNl->getValue());
+                        array_push($chunk['AAT']['preferredNames']['nl'], $prefLabelNl->getValue());
                     }
 
                     $prefLabelFr = $skosConcept->getLiteral('skos:prefLabel', 'fr');
 
                     if (!empty($prefLabelFr)) {
-                        array_push($chunk['AAT']['preferredNames'], $prefLabelFr->getValue());
+                        array_push($chunk['AAT']['preferredNames']['fr'], $prefLabelFr->getValue());
                     }
 
                     $prefLabelEn = $skosConcept->getLiteral('skos:prefLabel', 'en');
 
                     if (!empty($prefLabelEn)) {
-                        array_push($chunk['AAT']['preferredNames'], $prefLabelEn->getValue());
+                        array_push($chunk['AAT']['preferredNames']['en'], $prefLabelEn->getValue());
                     }
 
                     $prefLabelDe = $skosConcept->getLiteral('skos:prefLabel', 'de');
 
                     if (!empty($prefLabelDe)) {
-                        array_push($chunk['AAT']['preferredNames'], $prefLabelDe->getValue());
+                        array_push($chunk['AAT']['preferredNames']['de'], $prefLabelDe->getValue());
                     }
 
                     // Fetch and add the en, de, fr, nl non preferred labels (altLabel)
                     $altLabelNl = $skosConcept->getLiteral('skos:altLabel', 'nl');
 
                     if (!empty($altLabelNl)) {
-                        array_push($chunk['AAT']['nonPreferredNames'], $altLabelNl->getValue());
+                        array_push($chunk['AAT']['nonPreferredNames']['nl'], $altLabelNl->getValue());
                     }
 
                     $altLabelFr = $skosConcept->getLiteral('skos:altLabel', 'fr');
 
                     if (!empty($altLabelFr)) {
-                        array_push($chunk['AAT']['nonPreferredNames'], $altLabelFr->getValue());
+                        array_push($chunk['AAT']['nonPreferredNames']['fr'], $altLabelFr->getValue());
                     }
 
                     $altLabelEn = $skosConcept->getLiteral('skos:altLabel', 'en');
 
                     if (!empty($altLabelEn)) {
-                        array_push($chunk['AAT']['nonPreferredNames'], $altLabelEn->getValue());
+                        array_push($chunk['AAT']['nonPreferredNames']['en'], $altLabelEn->getValue());
                     }
 
                     $altLabelDe = $skosConcept->getLiteral('skos:altLabel', 'de');
 
                     if (!empty($altLabelDe)) {
-                        array_push($chunk['AAT']['nonPreferredNames'], $altLabelDe->getValue());
+                        array_push($chunk['AAT']['nonPreferredNames']['de'], $altLabelDe->getValue());
                     }
                 } else {
                     $this->log("Found no skos:Concept to extract label data from!");

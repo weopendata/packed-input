@@ -16,6 +16,8 @@ class Packedobject extends Eloquent
 
     protected $table = 'input_packedobjectmap';
 
+    protected $fillable = array('data_provider');
+
     /**
      * Relationship with Job
      */

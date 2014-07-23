@@ -16,6 +16,8 @@ class Packedinstitution extends Eloquent
 
     protected $table = 'input_packedinstitutionmap';
 
+    protected $fillable = array('data_provider');
+
     /**
      * Relationship with Job
      */

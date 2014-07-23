@@ -16,6 +16,8 @@ class Packedartist extends Eloquent
 
     protected $table = 'input_packedartistmap';
 
+    protected $fillable = array('data_provider', 'creator_column');
+
     /**
      * Relationship with Job
      */
@@ -48,7 +50,8 @@ class Packedartist extends Eloquent
     public static function getCreateValidators()
     {
         return array(
-            'data_provider' => 'required'
+            'data_provider' => 'required',
+            'creator_column' => 'alpha_dash'
         );
     }
 
@@ -59,8 +62,13 @@ class Packedartist extends Eloquent
     {
         return array(
             'data_provider' => array(
-                    'required' => true,
-                    'description' => 'The name of the provider of the data.',
+                'required' => true,
+                'description' => 'The name of the provider of the data.',
+            ),
+            'creator_column' => array(
+                'required' => false,
+                'description' => 'The column name of the creator field.',
+                'default_value' => 'creator',
             ),
         );
     }

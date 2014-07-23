@@ -23,7 +23,9 @@ class Packedartist extends AMapper
      * the original data (artist, art object) and will be identified
      * separately in the returning array for easy processing/querying later on
      *
-     * return array
+     * @param array $chunk
+     *
+     * @return array
      */
     public function execute(&$chunk)
     {
@@ -40,12 +42,23 @@ class Packedartist extends AMapper
             }
         }
 
+        // Map the creator value to the 'creator' key
+
+        if (!empty($chunk[$this->mapper->creator_column])) {
+
+            $chunk['creator'] = $chunk[$this->mapper->creator_column];
+
+            unset($chunk[$this->mapper->creator_column]);
+        } else {
+            $this->log('The provided creator column could not be found or is empty.', 'error');
+        }
+
         // Add the original data provider
         $chunk['dataprovider'] = $this->mapper->data_provider;
 
         $this->log('------   Mapping data  ------');
 
-        $timeout = 5;
+        $timeout = 0.2;
 
         $this->log("Enriching data for chunk identified by $id, waiting $timeout seconds before starting HTTP requests.");
 
@@ -57,7 +70,62 @@ class Packedartist extends AMapper
 
         $chunk = $this->enrichWithRkd($chunk);
 
+        $chunk = $this->mergeNameVariants($chunk);
+
         $this->log('----- Done mapping data -----');
+
+        return $chunk;
+    }
+
+    /**
+     * Merge the name variants from the different data sources
+     *
+     * @param array $chunk
+     *
+     * @return array
+     */
+    private function mergeNameVariants($chunk)
+    {
+        $chunk['uniqueNameVariants'] = array();
+
+        // If the entry (rkd, wikidata, viaf) exists, search for nameVariants
+        if (!empty($chunk['RKD']['uniqueNameVariants'])) {
+            $chunk['uniqueNameVariants'] = array_merge($chunk['RKD']['uniqueNameVariants'], $chunk['uniqueNameVariants']);
+        }
+
+        if (!empty($chunk['Wikidata']['uniqueNameVariants'])) {
+            $chunk['uniqueNameVariants'] = array_merge($chunk['Wikidata']['uniqueNameVariants'], $chunk['uniqueNameVariants']);
+        }
+
+        if (!empty($chunk['VIAF']['uniqueNameVariants'])) {
+            $chunk['uniqueNameVariants'] = array_merge($chunk['VIAF']['uniqueNameVariants'], $chunk['uniqueNameVariants']);
+        }
+
+        $chunk['uniqueNameVariants'] = array_unique($chunk['uniqueNameVariants']);
+
+        // array_unique leaves the original indexing [0] [4] ...
+        // and this gets processed in the document store as an object, not as an array
+        // for easy querying these non-sequential indexes need to be removed
+        $nameVariants = array();
+
+        foreach ($chunk['uniqueNameVariants'] as $index => $value) {
+            array_push($nameVariants, $value);
+        }
+
+        $chunk['uniqueNameVariants'] = $nameVariants;
+
+        // Count the amount of URI's it has
+        $matches = array('creatorViafId', 'creatorWikidataPid', 'creatorRkdPid', 'creatorOdisPid');
+
+        $matchCount = 0;
+
+        foreach ($matches as $match) {
+            if (!empty($chunk[$match])) {
+                $matchCount++;
+            }
+        }
+
+        $chunk['matchedUris'] = $matchCount;
 
         return $chunk;
     }
@@ -79,6 +147,7 @@ class Packedartist extends AMapper
                                 'nonPreferredNames' => array(),
                                 'dateOfBirth' => array(),
                                 'dateOfDeath' => array(),
+                                'uniqueNameVariants' => array(),
                             );
 
             foreach ($chunk['creatorViafId'] as $link) {
@@ -172,6 +241,23 @@ class Packedartist extends AMapper
                 }
             }
 
+            // Put the unique name variants (non preferred and preferred names) into name variants
+            $uniqueNameVariants = array();
+
+            foreach ($chunk['VIAF']['preferredNames'] as $preferredName) {
+                if (!in_array($preferredName, $uniqueNameVariants)) {
+                    array_push($uniqueNameVariants, $preferredName);
+                }
+            }
+
+            foreach ($chunk['VIAF']['nonPreferredNames'] as $nonPreferredName) {
+                if (!in_array($nonPreferredName, $uniqueNameVariants)) {
+                    array_push($uniqueNameVariants, $nonPreferredName);
+                }
+            }
+
+            $chunk['VIAF']['uniqueNameVariants'] = $uniqueNameVariants;
+
         } else {
 
             $chunk['VIAF'] = array();
@@ -204,6 +290,7 @@ class Packedartist extends AMapper
                                         'de' => array(),
                                         'nl' => array()
                                     ),
+                                    'uniqueNameVariants' => array(),
                                 );
 
             foreach ($chunk['creatorWikidataPid'] as $link) {
@@ -342,6 +429,11 @@ class Packedartist extends AMapper
 
                     array_push($chunk['Wikidata']['nameVariants'][$language], $name);
 
+                    // Add the name, if not already present, in the summary of the wiki name variants
+                    if (!in_array($name, $chunk['Wikidata']['uniqueNameVariants'])) {
+                        array_push($chunk['Wikidata']['uniqueNameVariants'], $name);
+                    }
+
                     // Don't overload the Wiki with requests
                     sleep(0.5);
                 }
@@ -398,7 +490,7 @@ class Packedartist extends AMapper
 
             $chunk['RKD'] = array(
                                 'preferredNames' => array(),
-                                'nameVariants' => array(),
+                                'uniqueNameVariants' => array(),
                                 'placeOfDeath' => array(),
                                 'placeOfBirth' => array(),
                                 'dateOfDeath' => array(),
@@ -429,7 +521,7 @@ class Packedartist extends AMapper
 
                 // This is always one name, but for consistency reasons with other data enrichments
                 // regarding preferred names, we'll add this one in an array as well
-                array_push($chunk['RKD']['preferredNames'], $preferredName);
+                array_push($chunk['RKD']['preferredNames'], @$preferredName[0]);
 
                 $this->log("Added preferred name(s) from the RKD feed.");
 
@@ -458,7 +550,7 @@ class Packedartist extends AMapper
                     $nameVariants = rtrim($nameVariants);
 
                     foreach (explode('<br>', $nameVariants) as $nameVariant) {
-                        array_push($chunk['RKD']['nameVariants'], $nameVariant);
+                        array_push($chunk['RKD']['uniqueNameVariants'], $nameVariant);
                     }
 
                     $this->log("Added name variants from the RKD feed.");
@@ -533,6 +625,21 @@ class Packedartist extends AMapper
                     }
                 }
             }
+
+            // Make the name variants unique, and add the preferredNames to them for they are also considered name variants
+            foreach ($chunk['RKD']['preferredNames'] as $preferredName) {
+                array_push($chunk['RKD']['uniqueNameVariants'], $preferredName);
+            }
+
+            $uniqueNameVariants = array();
+
+            foreach ($chunk['RKD']['uniqueNameVariants'] as $nameVariant) {
+                if (!in_array($nameVariant, $uniqueNameVariants)) {
+                    array_push($uniqueNameVariants, $nameVariant);
+                }
+            }
+
+            $chunk['RKD']['uniqueNameVariants'] = $uniqueNameVariants;
 
         } else {
 

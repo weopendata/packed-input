@@ -7,6 +7,10 @@ namespace Tdt\Input\EMLP\Load;
  */
 class Packedinstitution extends ALoader
 {
+     protected static $COLLECTION = 'institutions';
+
+    protected static $DB_NAME = 'packed';
+
     public function __construct($model, $command)
     {
         parent::__construct($model, $command);
@@ -14,8 +18,18 @@ class Packedinstitution extends ALoader
 
     public function init()
     {
-        // Clear all existing artists
-        \Packed\Institution::truncate();
+        // Clear all existing institutions from the respective data provider
+        $data_provider = $this->model->data_provider;
+
+        $mongoConfig = \Config::get('database.connections.mongodb');
+
+        $connString = 'mongodb://' . $mongoConfig['host'] . ':' . $mongoConfig['port'];
+
+        $client = new MongoClient($connString);
+
+        $artists = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
+
+        $artists->remove(array('dataprovider' => $data_provider));
     }
 
     public function cleanUp()
@@ -40,7 +54,10 @@ class Packedinstitution extends ALoader
         $institution = \Packed\Institution::create([]);
 
         foreach ($chunk as $key => $value) {
-            $institution->$key = $value;
+            // Don't include the numeric keys, they are redundant
+            if (!is_numeric($key)) {
+                $institution->$key = $value;
+            }
         }
 
         $result = $institution->save();
