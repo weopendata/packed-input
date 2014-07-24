@@ -44,18 +44,205 @@ class InstitutionStatController extends \Controller
         // Select the artist collection
         $institutions = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
 
+        $data['descriptions'] = array();
+
         // Get the amount of 1 to n descriptions
         for ($i = 2; $i <= $n; $i++) {
-            $data['1To' . $i . 'Descriptions'] = $this->getNDescriptions($institutions, $i);
+            $result = array('n' => $i, 'count' => $this->getNDescriptions($institutions, $i));
+
+            array_push($data['descriptions'], $result);
         }
+
+        $data['representations'] = array();
 
         // Get the amount of 1 to n representations
         for ($i = 2; $i <= $n; $i++) {
-            $data['1To' . $i . 'Representations'] = $this->getNRepresentations($institutions, $i);
+            $result = array('n' => $i, 'count' => $this->getNRepresentations($institutions, $i));
+
+            array_push($data['representations'], $result);
         }
 
+        $data['representationsAndDescriptions'] = array();
+
         // Get the amount of works that have 1 to n reps and 1 to n descriptions
-        $data['LOL'] = $this->getNRepAndDesc($institutions, 2);
+        for ($i = 2; $i <= $n; $i++) {
+            $result = array('n' => $i, 'count' => $this->getNRepAndDesc($institutions, $i));
+
+            array_push($data['representationsAndDescriptions'], $result);
+        }
+
+        // Count how many works there are per year
+        // with only dateStartValue and dateEndValue
+        // and then with dateIso8601Range
+        $data['normalized'] = $this->getNormWorksPerYear($institutions);
+
+        $data['nonNormalized'] = $this->getNonNormWorksPerYear($institutions);
+
+        return $data;
+    }
+
+    /**
+     * Get the frequency on the amount of works per year
+     * based on non normative dates
+     *
+     * @param MongoCollection $institutions
+     *
+     * @return array
+     */
+    private function getNonNormWorksPerYear($institutions)
+    {
+        $data = array();
+
+        // Group all of the works per year
+        $group = array(
+                    '$group' => array(
+                        '_id' => '$dateStartValue',
+                        'works' => array('$addToSet' => '$workPid')
+                    )
+                );
+
+        // Calculate the size of the works
+        $count = array(
+                    '$project' => array(
+                        '_id' => 0,
+                        'date' => '$_id',
+                        'amount' => array(
+                            '$size' => '$works'
+                        )
+                    )
+                );
+
+        $sort = array(
+                    '$sort' => array('date' => 1)
+                );
+
+        // Expand records per date
+        $unwind = array('$unwind' => '$dateStartValue');
+
+        // Group all of the works per year
+        $group = array(
+                    '$group' => array(
+                        '_id' => '$dateStartValue',
+                        'works' => array('$addToSet' => '$workPid')
+                    )
+                );
+
+        // Calculate the size of the works
+        $count = array(
+                    '$project' => array(
+                        '_id' => 0,
+                        'date' => '$_id',
+                        'amount' => array(
+                            '$size' => '$works'
+                        )
+                    )
+                );
+
+        $sort = array(
+                    '$sort' => array('date' => 1)
+                );
+
+        $resultStartDate = $institutions->aggregate($unwind, $group, $count, $sort);
+
+         // Expand records per date
+        $unwind = array('$unwind' => '$dateEndValue');
+
+        // Group all of the works per year
+        $group = array(
+                    '$group' => array(
+                        '_id' => '$dateEndValue',
+                        'works' => array('$addToSet' => '$workPid')
+                    )
+                );
+
+        // Calculate the size of the works
+        $count = array(
+                    '$project' => array(
+                        '_id' => 0,
+                        'date' => '$_id',
+                        'amount' => array(
+                            '$size' => '$works'
+                        )
+                    )
+                );
+
+        $sort = array(
+                    '$sort' => array('date' => 1)
+                );
+
+        $resultEndDate = $institutions->aggregate($unwind, $group, $count, $sort);
+
+
+        // Normally there should be a result, but just to be sure check beforehand
+        if (!empty($resultStartDate['result'])) {
+            // Build an assoc array where the amount of work
+            foreach ($resultStartDate['result'] as $date) {
+                $data[$date['date']] = $date['amount'];
+            }
+        } else {
+            \Log::info("No results were found after calculating the works per non normalized year (startDate).");
+        }
+
+        if (!empty($resultEndDate['result'])) {
+            // Add the amount of works
+            foreach ($resultEndDate['result'] as $date) {
+                if (!array_key_exists($date['date'], $data)) {
+                    $data[$date['date']] = $date['amount'];
+                } else {
+                    $data[$date['date']] += $date['amount'];
+                }
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get the frequency on the amount of works per year
+     * based on non normative dates
+     *
+     * @param MongoCollection $institutions
+     *
+     * @return array
+     */
+    private function getNormWorksPerYear($institutions)
+    {
+        $data = array();
+
+        // Expand records per date
+        $unwind = array('$unwind' => '$dateIso8601Range');
+
+        // Group all of the works per year
+        $group = array(
+                    '$group' => array(
+                        '_id' => '$dateIso8601Range',
+                        'works' => array(
+                            '$addToSet' => '$workPid'
+                        )
+                    )
+                );
+
+        // Calculate the size of the works
+        $project = array(
+                    '$project' => array(
+                        //'_id' => 0,
+                        'date' => '$_id',
+                        'amount' => array(
+                            '$size' => '$works'
+                        )
+                    )
+                );
+
+        $sort = array(
+                    '$sort' => array('date' => 1)
+                );
+
+        $result = $institutions->aggregate($unwind, $group, $project, $sort);
+
+        // Build an assoc array where the amount of work
+        foreach ($result['result'] as $date) {
+            $data[$date['date']] = $date['amount'];
+        }
 
         return $data;
     }
@@ -70,6 +257,8 @@ class InstitutionStatController extends \Controller
      */
     private function getNDescriptions($institutions, $n)
     {
+        $unwind = array('$unwind' => '$workPid');
+
         // Add the dataPid references (unique) group on workPid
         $group = array(
                     '$group' => array(
@@ -104,7 +293,7 @@ class InstitutionStatController extends \Controller
                     )
                 );
 
-        $result = $institutions->aggregate($group, $project, $match, $count);
+        $result = $institutions->aggregate($unwind, $group, $project, $match, $count);
 
         if (!empty($result['result'][0]['count'])) {
             return $result['result'][0]['count'];
@@ -123,6 +312,8 @@ class InstitutionStatController extends \Controller
      */
     private function getNRepresentations($institutions, $n)
     {
+        $unwind = array('$unwind' => '$workPid');
+
         // Add the representationPid references (unique) group on workPid
         $group = array(
                     '$group' => array(
@@ -157,7 +348,7 @@ class InstitutionStatController extends \Controller
                     )
                 );
 
-        $result = $institutions->aggregate($group, $project, $match, $count);
+        $result = $institutions->aggregate($unwind, $group, $project, $match, $count);
 
         if (!empty($result['result'][0]['count'])) {
             return $result['result'][0]['count'];
@@ -176,9 +367,9 @@ class InstitutionStatController extends \Controller
      */
     private function getNRepAndDesc($institutions, $n)
     {
-        // Add the representationPid references (unique) group on workPid
         $unwind = array('$unwind' => '$workPid');
 
+        // Add the id references (unique) group on workPid
         $group = array(
                     '$group' => array(
                         '_id' => '$workPid',
@@ -217,9 +408,7 @@ class InstitutionStatController extends \Controller
                     )
                 );
 
-        //dd($institutions->aggregate($unwind, $group, $project, $match, $count));
-
-        $result = $institutions->aggregate($group, $project, $match, $count);
+        $result = $institutions->aggregate($unwind, $group, $project, $match, $count);
 
         if (!empty($result['result'][0]['count'])) {
             return $result['result'][0]['count'];

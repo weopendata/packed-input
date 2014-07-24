@@ -18,6 +18,6 @@ Route::get('api/stats/objects/{data_provider?}', 'Tdt\Input\Controllers\ObjectSt
 
 ->where('museum', '[a-zA-Z]+');
 
-Route::get('api/stats/institutions/{data_provider?}', 'Tdt\Input\Controllers\InstitutionStatController@handle')
+Route::get('api/stats/works/{n}', 'Tdt\Input\Controllers\InstitutionStatController@handle')
 
-->where('museum', '[a-zA-Z]+');
+->where('n', '[2-9]+');

@@ -23,7 +23,7 @@ class Packedinstitution extends AMapper
      * the original data (artist, art object) and will be identified
      * separately in the returning array for easy processing/querying later on
      *
-     * return array
+     * @return array
      */
     public function execute(&$chunk)
     {
@@ -70,6 +70,25 @@ class Packedinstitution extends AMapper
         sleep($timeout);
 
         $chunk = $this->enrichWithWiki($chunk);
+
+        // Explode the date range and fill in the gap
+        if (!empty($chunk['dateIso8601'])) {
+
+            // Sometimes the value is a single value (small remark this date notation is nowhere near ISO 8601?)
+            $range = explode('/', $chunk['dateIso8601'][0]);
+
+            if (count($range) == 2) {
+
+                $dateRange = array();
+
+                for ($i = $range[0]; $i <= $range[1]; $i++) {
+                    array_push($dateRange, (int) $i);
+                }
+
+                $chunk['dateIso8601Range'] = $dateRange;
+            }
+
+        }
 
         $this->log('----- Done mapping data -----');
 
