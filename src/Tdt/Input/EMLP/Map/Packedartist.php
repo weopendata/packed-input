@@ -48,7 +48,10 @@ class Packedartist extends AMapper
 
             $chunk['creator'] = $chunk[$this->mapper->creator_column];
 
-            unset($chunk[$this->mapper->creator_column]);
+            if ($this->mapper->creator_column != 'creator') {
+                unset($chunk[$this->mapper->creator_column]);
+            }
+
         } else {
             $this->log('The provided creator column could not be found or is empty.', 'error');
         }

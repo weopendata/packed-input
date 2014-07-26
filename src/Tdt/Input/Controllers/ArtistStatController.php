@@ -132,7 +132,7 @@ class ArtistStatController extends StatController
      *
      * @param MongoCollection $artists
      *
-     * @return in
+     * @return int
      */
     private function countRkdUris($artists)
     {
@@ -157,7 +157,7 @@ class ArtistStatController extends StatController
      *
      * @param MongoCollection $artists
      *
-     * @return in
+     * @return int
      */
     private function countWikidataUris($artists)
     {
@@ -182,7 +182,7 @@ class ArtistStatController extends StatController
      *
      * @param MongoCollection $artists
      *
-     * @return in
+     * @return int
      */
     private function countViafUris($artists)
     {
@@ -199,7 +199,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -207,7 +211,7 @@ class ArtistStatController extends StatController
      *
      * @param MongoCollection $artists
      *
-     * @return in
+     * @return int
      */
     private function countOdisUris($artists)
     {
@@ -224,7 +228,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -259,7 +267,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $group, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -294,7 +306,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $group, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -330,7 +346,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $group, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -365,7 +385,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $group, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -390,7 +414,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
 
     }
 
@@ -418,7 +446,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($unwind, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -445,7 +477,11 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate($project, $unwind, $count);
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 
     /**
@@ -471,6 +507,10 @@ class ArtistStatController extends StatController
 
         $result = $artists->aggregate(array($unwind, $count));
 
-        return $result['result'][0]['count'];
+        if (!empty($result['result'][0])) {
+            return $result['result'][0]['count'];
+        } else {
+            return 0;
+        }
     }
 }

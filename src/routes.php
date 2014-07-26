@@ -21,3 +21,7 @@ Route::get('api/stats/objects/{data_provider?}', 'Tdt\Input\Controllers\ObjectSt
 Route::get('api/stats/works/{n}', 'Tdt\Input\Controllers\InstitutionStatController@handle')
 
 ->where('n', '[2-9]+');
+
+Route::get('api/query', 'Tdt\Input\Controllers\QueryController@handle');
+
+Route::get('api/suggest', 'Tdt\Input\Controllers\QueryController@suggest');
