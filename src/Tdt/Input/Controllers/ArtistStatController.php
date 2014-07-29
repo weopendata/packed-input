@@ -15,6 +15,8 @@ use Packed\Artist;
 use Packed\Institution;
 use Packed\Object;
 use MongoClient;
+use Tdt\Core\Datasets\Data;
+use Tdt\Core\Formatters\CSVFormatter;
 
 class ArtistStatController extends StatController
 {
@@ -24,7 +26,7 @@ class ArtistStatController extends StatController
     public function handle($dataProvider = null)
     {
 
-        $data = array();
+        $data = new \stdClass();
 
         // Fetch information about the artists
 
@@ -41,26 +43,26 @@ class ArtistStatController extends StatController
         $artists = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
 
         // Get the amount of unique strings in the original data
-        $data['uniqueStrings'] = $this->countUniqueStrings($artists);
+        $data->uniqueStrings = $this->countUniqueStrings($artists);
 
         // Calculate per feed how many unique agents were identified
-        $data['rkdAgents'] = $this->countRkdUris($artists);
-        $data['rkdUniqueAgents'] = $this->countUniqueRkdUris($artists);
+        $data->rkdAgents = $this->countRkdUris($artists);
+        $data->rkdUniqueAgents = $this->countUniqueRkdUris($artists);
 
-        $data['viafAgents'] = $this->countViafUris($artists);
-        $data['viafUniqueAgents'] = $this->countUniqueViafUris($artists);
+        $data->viafAgents = $this->countViafUris($artists);
+        $data->viafUniqueAgents = $this->countUniqueViafUris($artists);
 
-        $data['wikidataAgents'] = $this->countWikidataUris($artists);
-        $data['wikidataUniqueAgents'] = $this->countUniqueWikiUris($artists);
+        $data->wikidataAgents = $this->countWikidataUris($artists);
+        $data->wikidataUniqueAgents = $this->countUniqueWikiUris($artists);
 
-        $data['odisAgents'] = $this->countOdisUris($artists);
-        $data['odisUniqueAgents'] = $this->countUniqueOdisUris($artists);
+        $data->odisAgents = $this->countOdisUris($artists);
+        $data->odisUniqueAgents = $this->countUniqueOdisUris($artists);
 
         // Count the creators that were matched with 1, 2 and 3 URI's
-        $data['matchOneURI'] = $this->countUriMatch($artists, 1);
-        $data['matchTwoURI'] = $this->countUriMatch($artists, 2);
-        $data['matchThreeURI'] = $this->countUriMatch($artists, 3);
-        $data['matchFourURI'] = $this->countUriMatch($artists, 4);
+        $data->matchOneURI = $this->countUriMatch($artists, 1);
+        $data->matchTwoURI = $this->countUriMatch($artists, 2);
+        $data->matchThreeURI = $this->countUriMatch($artists, 3);
+        $data->matchFourURI = $this->countUriMatch($artists, 4);
 
         // Get the amount of unique name variants
         // The amount of unique name variants from the different feeds is extra info
@@ -69,15 +71,21 @@ class ArtistStatController extends StatController
 
         $wikiNameVariants = $this->countWikiNameVariants($artists);
 
-        $data['rkdNameVariants'] = $this->countRkdNameVariants($artists);
+        $data->rkdNameVariants = $this->countRkdNameVariants($artists);
 
-        $data['viafNameVariants'] = $this->countViafNameVariants($artists);
+        $data->viafNameVariants = $this->countViafNameVariants($artists);
 
-        $data['wikiNameVariants'] = $this->countWikiNameVariants($artists);
+        $data->wikiNameVariants = $this->countWikiNameVariants($artists);
 
-        $data['nameVariants'] = $nameVariants;
+        $data->nameVariants = $nameVariants;
 
-        return \Response::json($data);
+        $dataObject = new Data();
+        $dataObject->data = array($data);
+        $dataObject->is_semantic = false;
+
+        $formatter = new CSVFormatter();
+
+        return $formatter->createResponse($dataObject);
     }
 
     /**

@@ -15,6 +15,8 @@ use Packed\Artist;
 use Packed\Institution;
 use Packed\Object;
 use MongoClient;
+use Tdt\Core\Datasets\Data;
+use Tdt\Core\Formatters\CSVFormatter;
 
 class ObjectStatController extends StatController
 {
@@ -23,7 +25,7 @@ class ObjectStatController extends StatController
 
     public function handle($dataProvider = null)
     {
-        $data = array();
+        $data = new \stdClass();
 
         // Fetch information about the objects
 
@@ -40,27 +42,33 @@ class ObjectStatController extends StatController
         $objects = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
 
         // Get the amount of unique strings in the original data
-        $data['uniqueStrings'] = $this->countUniqueStrings($objects);
+        $data->uniqueStrings = $this->countUniqueStrings($objects);
 
         // Count the amount of unique AAT URI's
-        $data['uniqueAatConcepts'] = $this->countUniqueAatUris($objects);
+        $data->uniqueAatConcepts = $this->countUniqueAatUris($objects);
 
         // Count the amount of AAT URI matches
-        $data['matchURI'] = $this->countUriMatch($objects);
+        $data->matchURI = $this->countUriMatch($objects);
 
         // Count the amount of en additions
-        $data['enStrings'] = $this->countLingualAdditions($objects, 'en');
+        $data->enStrings = $this->countLingualAdditions($objects, 'en');
 
         // Count the amount of fr additions
-        $data['frStrings'] = $this->countLingualAdditions($objects, 'fr');
+        $data->frStrings = $this->countLingualAdditions($objects, 'fr');
 
         // Count the amount of de additions
-        $data['deStrings'] = $this->countLingualAdditions($objects, 'de');
+        $data->deStrings = $this->countLingualAdditions($objects, 'de');
 
         // Count the amount of nl additions
-        $data['nlStrings'] = $this->countLingualAdditions($objects, 'nl');
+        $data->nlStrings = $this->countLingualAdditions($objects, 'nl');
 
-        return \Response::json($data);
+        $dataObject = new Data();
+        $dataObject->data = array($data);
+        $dataObject->is_semantic = false;
+
+        $formatter = new CSVFormatter();
+
+        return $formatter->createResponse($dataObject);
     }
 
     /**

@@ -15,6 +15,8 @@ use Packed\Artist;
 use Packed\Institution;
 use Packed\Object;
 use MongoClient;
+use Tdt\Core\Datasets\Data;
+use Tdt\Core\Formatters\CSVFormatter;
 
 class InstitutionStatController extends \Controller
 {
@@ -33,7 +35,7 @@ class InstitutionStatController extends \Controller
      */
     public function handle($n = 1)
     {
-        $data = array();
+        $data = new \stdClass();
 
         // Set up a connection to the mongodb, we cannot perform queries with
         // the mongoDB abstraction from the jenssegers repo
@@ -44,41 +46,44 @@ class InstitutionStatController extends \Controller
         // Select the artist collection
         $institutions = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
 
-        $data['descriptions'] = array();
-
         // Get the amount of 1 to n descriptions
         for ($i = 2; $i <= $n; $i++) {
-            $result = array('n' => $i, 'count' => $this->getNDescriptions($institutions, $i));
 
-            array_push($data['descriptions'], $result);
+            $description = '1To' . $i . 'Description';
+
+            $data->$description = $this->getNDescriptions($institutions, $i);
         }
-
-        $data['representations'] = array();
 
         // Get the amount of 1 to n representations
         for ($i = 2; $i <= $n; $i++) {
-            $result = array('n' => $i, 'count' => $this->getNRepresentations($institutions, $i));
 
-            array_push($data['representations'], $result);
+            $representation = '1To' . $i . 'Representation';
+
+            $data->representation = $this->getNRepresentations($institutions, $i);
         }
-
-        $data['representationsAndDescriptions'] = array();
 
         // Get the amount of works that have 1 to n reps and 1 to n descriptions
         for ($i = 2; $i <= $n; $i++) {
-            $result = array('n' => $i, 'count' => $this->getNRepAndDesc($institutions, $i));
 
-            array_push($data['representationsAndDescriptions'], $result);
+            $repAndDesc = '1To' . $i . 'RepresentationAndDescription';
+
+            $data->repAndDesc = $this->getNRepAndDesc($institutions, $i);
         }
 
         // Count how many works there are per year
         // with only dateStartValue and dateEndValue
         // and then with dateIso8601Range
-        $data['normalized'] = $this->getNormWorksPerYear($institutions);
+        $data->normalized = $this->getNormWorksPerYear($institutions);
 
-        $data['nonNormalized'] = $this->getNonNormWorksPerYear($institutions);
+        $data->nonNormalized = $this->getNonNormWorksPerYear($institutions);
 
-        return $data;
+        $dataObject = new Data();
+        $dataObject->data = array($data);
+        $dataObject->is_semantic = false;
+
+        $formatter = new CSVFormatter();
+
+        return $formatter->createResponse($dataObject);
     }
 
     /**
