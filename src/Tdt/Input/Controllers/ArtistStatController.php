@@ -194,7 +194,7 @@ class ArtistStatController extends StatController
      */
     private function countViafUris($artists)
     {
-        $unwind = array('$unwind' => '$creatorViafId');
+        $unwind = array('$unwind' => '$creatorViafPid');
 
         $count = array(
                     '$group' => array(
@@ -292,13 +292,13 @@ class ArtistStatController extends StatController
      */
     private function countUniqueViafUris($artists)
     {
-        $unwind = array('$unwind' => '$creatorViafId');
+        $unwind = array('$unwind' => '$creatorViafPid');
 
         $group = array(
                     '$group' => array(
-                        '_id' => '$creatorViafId',
+                        '_id' => '$creatorViafPid',
                         'unique' => array(
-                            '$addToSet' => '$creatorViafId'
+                            '$addToSet' => '$creatorViafPid'
                         )
                     )
                 );

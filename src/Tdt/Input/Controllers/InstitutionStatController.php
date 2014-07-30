@@ -70,15 +70,84 @@ class InstitutionStatController extends \Controller
             $data->repAndDesc = $this->getNRepAndDesc($institutions, $i);
         }
 
+        $dataObject = new Data();
+        $dataObject->data = array($data);
+        $dataObject->is_semantic = false;
+
+        $formatter = new CSVFormatter();
+
+        return $formatter->createResponse($dataObject);
+    }
+
+    /**
+     * Return the amount of normalized works and non normalized works
+     *
+     * @return Response
+     */
+    public function normalized()
+    {
+        $dataResult = array();
+
+        // Set up a connection to the mongodb, we cannot perform queries with
+        // the mongoDB abstraction from the jenssegers repo
+        // (e.g. distinct() function already provides incorrect information)
+
+        $client = $this->getMongoClient();
+
+        // Select the artist collection
+        $institutions = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
+
         // Count how many works there are per year
         // with only dateStartValue and dateEndValue
         // and then with dateIso8601Range
-        $data->normalized = $this->getNormWorksPerYear($institutions);
+        $normalizedResults = $this->getNormWorksPerYear($institutions);
 
-        $data->nonNormalized = $this->getNonNormWorksPerYear($institutions);
+        $nonNormalizedResults = $this->getNonNormWorksPerYear($institutions);
+
+        $normalizedKeys = array_keys($normalizedResults);
+
+        $nonNormalizedKeys = array_keys($nonNormalizedResults);
+
+        $count = max(count($normalizedKeys), count($nonNormalizedKeys));
+
+        $normHeader = 'amount of works found through normalization';
+
+        $nonNormHeader = 'amount of works found without normalization';
+
+        // Add the normalized and non normalized keys
+        for ($i = 0; $i < $count; $i++) {
+
+            $data = new \stdClass();
+
+            if (!empty($normalizedKeys[$i]) || is_numeric(@$normalizedKeys[$i])) {
+
+                $key = $normalizedKeys[$i];
+
+                $data->normalizedYear = $key;
+
+                $data->$normHeader = $normalizedResults[$key];
+            } else {
+                $data->nonNormalizedYear = '';
+                $data->normHeader = '';
+            }
+
+            if (!empty($nonNormalizedKeys[$i]) || is_numeric(@$nonNormalizedKeys[$i])) {
+
+                $key = $nonNormalizedKeys[$i];
+
+                $data->nonNormalizedYear = $key;
+
+                $data->$nonNormHeader = $nonNormalizedResults[$key];
+            } else {
+                $data->nonNormalizedYear = '';
+                $data->nonNormHeader = '';
+            }
+
+            array_push($dataResult, $data);
+        }
 
         $dataObject = new Data();
-        $dataObject->data = array($data);
+        $dataObject->data = $dataResult;
         $dataObject->is_semantic = false;
 
         $formatter = new CSVFormatter();
