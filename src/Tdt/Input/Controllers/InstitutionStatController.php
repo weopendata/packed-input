@@ -59,7 +59,7 @@ class InstitutionStatController extends \Controller
 
             $representation = '1To' . $i . 'Representation';
 
-            $data->representation = $this->getNRepresentations($institutions, $i);
+            $data->$representation = $this->getNRepresentations($institutions, $i);
         }
 
         // Get the amount of works that have 1 to n reps and 1 to n descriptions
@@ -67,7 +67,7 @@ class InstitutionStatController extends \Controller
 
             $repAndDesc = '1To' . $i . 'RepresentationAndDescription';
 
-            $data->repAndDesc = $this->getNRepAndDesc($institutions, $i);
+            $data->$repAndDesc = $this->getNRepAndDesc($institutions, $i);
         }
 
         $dataObject = new Data();
