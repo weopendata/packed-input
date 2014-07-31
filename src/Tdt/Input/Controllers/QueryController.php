@@ -98,7 +98,9 @@ class QueryController extends \Controller
 
                     $properties = array(
                                     '_id' => 0,
-                                    'dateIso8601Range' => 0
+                                    'dateIso8601Range' => 0,
+                                    'updated_at' => 0,
+                                    'created_at' => 0,
                                 );
 
                     $worksCursor = $works->find($filter, $properties);
@@ -117,7 +119,7 @@ class QueryController extends \Controller
 
         } else {
 
-            $objectResults = array();
+            $workResults = array();
 
             $parameters = array('objectNumber', 'title', 'objectName');
 
@@ -148,10 +150,10 @@ class QueryController extends \Controller
                 array_push($and, $clause);
             }
 
-            $filter = array($and);
-
             // Get the objects with the build up filter
+            $works = $this->getCollection('institutions');
             $objects = $this->getCollection('objects');
+            $artists = $this->getCollection('artists');
 
             // Properties that don't need to be returned
             $properties = array(
@@ -160,9 +162,42 @@ class QueryController extends \Controller
                             'updated_at' => 0,
                         );
 
-            $objects->find($filter);
+            $filter = array('$and' => $filter);
 
-            $results['objects'] = $objectResults;
+            $worksCursor = $works->find($filter, $properties);
+
+            foreach ($worksCursor as $work) {
+
+                if (!empty($work['objectNameId'])) {
+
+                    $filter = array('objectNameId' => $work['objectNameId']);
+
+                    $objectCursor = $objects->find($filter, $properties);
+
+                    $work['objects'] = array();
+
+                    foreach ($objectCursor as $object) {
+                        array_push($work['objects'], $object);
+                    }
+                }
+
+                if (!empty($work['creatorId'])) {
+
+                    $filter = array('creatorId' => $work['creatorId']);
+
+                    $artistCursor = $artists->find($filter, $properties);
+
+                    $work['artists'] = array();
+
+                    foreach ($artistCursor as $artist) {
+                        array_push($work['artists'], $artist);
+                    }
+                }
+
+                array_push($workResults, $work);
+            }
+
+            $results['works'] = $workResults;
         }
 
         // Check for object related parameters
