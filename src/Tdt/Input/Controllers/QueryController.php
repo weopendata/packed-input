@@ -50,12 +50,12 @@ class QueryController extends \Controller
         // Check if index is true or false
         $index = \Input::get('index', false);
 
-        $index = (bool) $index;
+        $index = filter_var($index, FILTER_VALIDATE_BOOLEAN);
 
         // Check if dates have to search in a normalized way or not
         $normalized = \Input::get('normalized', false);
 
-        $normalized = (bool) $normalized;
+        $normalized = filter_var($normalized, FILTER_VALIDATE_BOOLEAN);
 
         // If a creator has been passed, search for matching
         // creatorIds in the artist collection, this collection
@@ -221,7 +221,7 @@ class QueryController extends \Controller
         // Check if dates have to search in a normalized way or not
         $normalized = \Input::get('normalized', false);
 
-        $normalized = (bool) $normalized;
+        $normalized = filter_var($normalized, FILTER_VALIDATE_BOOLEAN);
 
         $filterParameters = array();
 
@@ -294,8 +294,8 @@ class QueryController extends \Controller
 
                 $clause = array(
                             'dateIso8601Range' => array(
-                                '$gte' => $startDate,
-                                '$lte' => $endDate,
+                                '$gte' => (int) $startDate,
+                                '$lte' => (int) $endDate,
                             )
                         );
 
@@ -304,10 +304,10 @@ class QueryController extends \Controller
 
                 $clause = array(
                             '$or' => array(
-                                array('dateStartValue' => $startDate),
-                                array('dateStartValue' => $endDate),
-                                array('dateEndValue' => $startDate),
-                                array('dateEndValue' => $endDate)
+                                array('dateStartValue' => (string) $startDate),
+                                array('dateStartValue' => (string) $endDate),
+                                array('dateEndValue' => (string) $startDate),
+                                array('dateEndValue' => (string) $endDate)
                             )
                         );
 
@@ -335,7 +335,7 @@ class QueryController extends \Controller
         // Check if index is active
         $index = \Input::get('index', false);
 
-        $index = (bool) $index;
+        $index = filter_var($index, FILTER_VALIDATE_BOOLEAN);
 
         // Scan the query string parameters for a first hit
         foreach (\Input::get() as $key => $val) {
