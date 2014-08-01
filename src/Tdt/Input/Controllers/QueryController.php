@@ -23,6 +23,8 @@ class QueryController extends \Controller
 
     /**
      * Handle the query
+     *
+     * @return Response
      */
     public function handle()
     {
@@ -49,6 +51,11 @@ class QueryController extends \Controller
         $index = \Input::get('index', false);
 
         $index = (bool) $index;
+
+        // Check if dates have to search in a normalized way or not
+        $normalized = \Input::get('normalized', false);
+
+        $normalized = (bool) $normalized;
 
         // If a creator has been passed, search for matching
         // creatorIds in the artist collection, this collection
@@ -209,7 +216,12 @@ class QueryController extends \Controller
      */
     private function buildWorksFilter()
     {
-        $parameters = array('objectDetail', 'objectName');
+        $parameters = array('objectDetail', 'objectName', 'startDate', 'endDate');
+
+        // Check if dates have to search in a normalized way or not
+        $normalized = \Input::get('normalized', false);
+
+        $normalized = (bool) $normalized;
 
         $filterParameters = array();
 
@@ -225,6 +237,7 @@ class QueryController extends \Controller
         // Build the $and clause
         $and = array();
 
+        // Check for objectDetail (objectNumber or title)
         if (!empty($filterParameters['objectDetail'])) {
 
             $clause = array(
@@ -246,6 +259,7 @@ class QueryController extends \Controller
             array_push($and, $clause);
         }
 
+        // Check for objectName
         if (!empty($filterParameters['objectName'])) {
 
             $clause = array(
@@ -256,7 +270,49 @@ class QueryController extends \Controller
                 );
 
             array_push($and, $clause);
+        }
 
+        // Check for date parameters
+        if (!empty($filterParameters['startDate']) || !empty($filterParameters['endDate'])) {
+
+            $startDate = @$filterParameters['startDate'];
+            $endDate = @$filterParameters['endDate'];
+
+            if (empty($startDate)) {
+                // Arbitrary lower boundry
+
+                $startDate = -5000;
+            }
+
+            if (empty($endDate)) {
+                // Arbitrary upper boundry
+
+                $endDate = 3000;
+            }
+
+            if ($normalized) {
+
+                $clause = array(
+                            'dateIso8601Range' => array(
+                                '$gte' => $startDate,
+                                '$lte' => $endDate,
+                            )
+                        );
+
+                array_push($and, $clause);
+            } else {
+
+                $clause = array(
+                            '$or' => array(
+                                array('dateStartValue' => $startDate),
+                                array('dateStartValue' => $endDate),
+                                array('dateEndValue' => $startDate),
+                                array('dateEndValue' => $endDate)
+                            )
+                        );
+
+                array_push($and, $clause);
+            }
         }
 
         return $and;
@@ -351,6 +407,8 @@ class QueryController extends \Controller
                     }
                 }
             }
+
+            return Response::json($results);
 
         } else {
 
