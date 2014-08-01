@@ -17,9 +17,9 @@ class QueryController extends \Controller
 
     protected static $DB_NAME = 'packed';
 
-    protected static $SUGGEST_PAGE_SIZE = 30;
+    protected static $SUGGEST_PAGE_SIZE = 100;
 
-    protected static $QUERY_PAGE_SIZE = 60;
+    protected static $QUERY_PAGE_SIZE = 100;
 
     /**
      * Handle the query
@@ -27,6 +27,11 @@ class QueryController extends \Controller
     public function handle()
     {
         $input = \Input::all();
+
+        // Fetch limit and offset
+        $limit = \Input::get('limit', self::$QUERY_PAGE_SIZE);
+
+        $offset = \Input::get('offset', 0);
 
         // If nothing is given, return a 400
         if (empty($input)) {
@@ -45,7 +50,13 @@ class QueryController extends \Controller
 
         $index = (bool) $index;
 
+        // If a creator has been passed, search for matching
+        // creatorIds in the artist collection, this collection
+        // contains name variants and offers better search results (if index is set to true)
         if (!empty($creator)) {
+
+            // Start from artists, and find related works through the
+            // institutions collection
 
             $artists = $this->getCollection('artists');
 
@@ -85,16 +96,24 @@ class QueryController extends \Controller
                         );
             }
 
-            $artistCursor = $artists->find($filter, $properties);
+            $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
 
             foreach ($artistCursor as $artist) {
 
                 if (!empty($artist['creatorId'])) {
 
                     // Foreach artist, search for accompanying works
-                    $filter = array('creatorId' => $artist['creatorId']);
+                    $creatorFilter = array('creatorId' => $artist['creatorId']);
 
-                    // TODO: add the object filters !!
+                    $worksFilter = $this->buildWorksFilter();
+
+                    $filter = array($creatorFilter);
+
+                    foreach ($worksFilter as $workFilter) {
+                        array_push($filter, $workFilter);
+                    }
+
+                    $filter = array('$and' => $filter);
 
                     $properties = array(
                                     '_id' => 0,
@@ -110,45 +129,24 @@ class QueryController extends \Controller
                     foreach ($worksCursor as $work) {
                         array_push($artist['works'], $work);
                     }
-                }
 
-                array_push($artistResults, $artist);
+                    if (!empty($artist['works']) && !empty($worksFilter)) {
+                        array_push($artistResults, $artist);
+                    } else if (empty($worksFilter)) {
+                        array_push($artistResults, $artist);
+                    }
+                }
             }
 
             $results['artists'] = $artistResults;
 
         } else {
 
+            // Start from institutions collections (= works) and find
+            // related artists and objects
             $workResults = array();
 
-            $parameters = array('objectNumber', 'title', 'objectName');
-
-            $filterParameters = array();
-
-            foreach ($parameters as $parameter) {
-
-                $val = \Input::get($parameter);
-
-                if (!empty($val)) {
-                    $filterParameters[$parameter] = \Input::get($parameter);
-                }
-            }
-
-            // Build the $and clause
-
-            $and = array();
-
-            foreach ($filterParameters as $filterParam => $filterVal) {
-
-                $clause = array(
-                            $filterParam => array(
-                                '$regex' => '.*' . $filterVal . '.*',
-                                '$options' => 'i'
-                            )
-                        );
-
-                array_push($and, $clause);
-            }
+            $filter = $this->buildWorksFilter();
 
             // Get the objects with the build up filter
             $works = $this->getCollection('institutions');
@@ -164,6 +162,7 @@ class QueryController extends \Controller
 
             $filter = array('$and' => $filter);
 
+            // Find the works matching the filter
             $worksCursor = $works->find($filter, $properties);
 
             foreach ($worksCursor as $work) {
@@ -200,16 +199,52 @@ class QueryController extends \Controller
             $results['works'] = $workResults;
         }
 
-        // Check for object related parameters
-
         return \Response::json($results);
+    }
+
+    /**
+     * Create a works filter based on the relevant query string parameters
+     *
+     * @return array
+     */
+    private function buildWorksFilter()
+    {
+        $parameters = array('objectNumber', 'title', 'objectName');
+
+        $filterParameters = array();
+
+        foreach ($parameters as $parameter) {
+
+            $val = \Input::get($parameter);
+
+            if (!empty($val)) {
+                $filterParameters[$parameter] = \Input::get($parameter);
+            }
+        }
+
+        // Build the $and clause
+        $and = array();
+
+        // Build a filter for every parameter passed
+        foreach ($filterParameters as $filterParam => $filterVal) {
+
+            $clause = array(
+                $filterParam => array(
+                    '$regex' => '.*' . $filterVal . '.*',
+                    '$options' => 'i'
+                    )
+                );
+
+            array_push($and, $clause);
+        }
+
+        return $and;
     }
 
     /**
      * Fetch suggestions based on the query string parameter from the institutions (=works) collection
      *
      * Options are: creator, objectName, title and objectNumber
-     * TODO: more suggestions when index is on!
      *
      * @return Response
      */
@@ -220,11 +255,18 @@ class QueryController extends \Controller
         $searchVal = '';
         $searchKey = '';
 
+        // Check if index is active
+        $index = \Input::get('index', false);
+
+        $index = (bool) $index;
+
         // Scan the query string parameters for a first hit
         foreach (\Input::get() as $key => $val) {
             if (in_array($key, $parameters)) {
                 $searchKey = $key;
                 $searchVal = $val;
+
+                break;
             }
         }
 
@@ -235,40 +277,99 @@ class QueryController extends \Controller
         // Get the mongo client
         $client = $this->getMongoClient();
 
-        // Get the collection
-        $works = $client->selectCollection(self::$DB_NAME, 'institutions');
-
-        // Fetch the results, only with the necessary field
-        $query = array(
-                    $searchKey => array(
-                            '$regex' => '.*' . $searchVal . '.*',
-                            '$options' => 'i'
-                    ),
-                );
-
-        // Make the query and only retrieve the field that matches the search key
-        $cursor = $works->find($query, array($searchKey => 1))->limit(self::$SUGGEST_PAGE_SIZE);
-
-        if (!$cursor->hasNext()) {
-            return Response::json(array());
-        }
-
+        // Prepare the end result array
         $results = array();
 
-        foreach ($cursor as $result) {
-            if (is_array($result[$searchKey])) {
+        if ($searchKey == 'creator') {
 
-                foreach ($result[$searchKey] as $val) {
-                    if (!in_array($val, $results)) {
-                        array_push($results, $val);
+            // Get the artists collection
+            $artists = $client->selectCollection(self::$DB_NAME, 'artists');
+
+            // Fetch the results, only with the necessary field
+            // If it's a creator and the index is active, also search in the name variant_set(variant, value)
+            $query = array(
+                $searchKey => array(
+                    '$regex' => '.*' . $searchVal . '.*',
+                    '$options' => 'i',
+                ),
+            );
+
+            if ($index) {
+
+                $nameVariants = array(
+                    'uniqueNameVariants' => array(
+                        '$regex' => '.*' . $searchVal . '.*',
+                        '$options' => 'i'
+                        )
+                    );
+
+                $query = array('$or' => array($nameVariants, $query));
+            }
+
+            // Make the query and only retrieve the field that matches the search key
+            $cursor = $artists->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
+
+            if (!$cursor->hasNext()) {
+                return Response::json(array());
+            }
+
+            $results = array();
+
+            foreach ($cursor as $result) {
+
+                if (is_array($result[$searchKey])) {
+
+                    foreach ($result[$searchKey] as $val) {
+                        if (!in_array($val, $results)) {
+                            array_push($results, $val);
+                        }
                     }
-                }
-            } else {
-                if (!in_array($result[$searchKey], $results)) {
-                    array_push($results, $result[$searchKey]);
+                } else {
+                    if (!in_array($result[$searchKey], $results)) {
+                        array_push($results, $result[$searchKey]);
+                    }
                 }
             }
 
+        } else {
+
+            // Get the works collection
+            $works = $client->selectCollection(self::$DB_NAME, 'institutions');
+
+            // Fetch the results, only with the necessary field
+            // If it's a creator and the index is active, also search in the name variant_set(variant, value)
+
+            $query = array(
+                $searchKey => array(
+                    '$regex' => '.*' . $searchVal . '.*',
+                    '$options' => 'i'
+                    ),
+                );
+
+            // Make the query and only retrieve the field that matches the search key
+            $cursor = $works->find($query, array($searchKey => 1))->limit(self::$SUGGEST_PAGE_SIZE);
+
+            if (!$cursor->hasNext()) {
+                return Response::json(array());
+            }
+
+            $results = array();
+
+            foreach ($cursor as $result) {
+                if (is_array($result[$searchKey])) {
+
+                    foreach ($result[$searchKey] as $val) {
+                        if (!in_array($val, $results)) {
+                            array_push($results, $val);
+                        }
+                    }
+                } else {
+                    if (!in_array($result[$searchKey], $results)) {
+                        array_push($results, $result[$searchKey]);
+                    }
+                }
+
+            }
         }
 
         return Response::json($results);
