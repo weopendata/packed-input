@@ -209,7 +209,7 @@ class QueryController extends \Controller
      */
     private function buildWorksFilter()
     {
-        $parameters = array('objectNumber', 'title', 'objectName');
+        $parameters = array('objectDetail', 'objectName');
 
         $filterParameters = array();
 
@@ -225,17 +225,38 @@ class QueryController extends \Controller
         // Build the $and clause
         $and = array();
 
-        // Build a filter for every parameter passed
-        foreach ($filterParameters as $filterParam => $filterVal) {
+        if (!empty($filterParameters['objectDetail'])) {
 
             $clause = array(
-                $filterParam => array(
-                    '$regex' => '.*' . $filterVal . '.*',
+                '$or' => array(
+                        array(
+                            'objectNumber' => array(
+                                '$regex' => '.*' . $filterParameters['objectDetail'] . '.*',
+                                '$options' => 'i'
+                            )
+                        ), array(
+                            'title' => array(
+                                '$regex' => '.*' . $filterParameters['objectDetail'] . '.*',
+                                '$options' => 'i'
+                            )
+                        )
+                    )
+                );
+
+            array_push($and, $clause);
+        }
+
+        if (!empty($filterParameters['objectName'])) {
+
+            $clause = array(
+                'objectName' => array(
+                    '$regex' => '.*' . $filterParameters['objectName'] . '.*',
                     '$options' => 'i'
                     )
                 );
 
             array_push($and, $clause);
+
         }
 
         return $and;
@@ -250,7 +271,7 @@ class QueryController extends \Controller
      */
     public function suggest()
     {
-        $parameters = array('creator', 'objectName', 'title', 'objectNumber');
+        $parameters = array('creator', 'objectName', 'objectDetail');
 
         $searchVal = '';
         $searchKey = '';
@@ -339,40 +360,103 @@ class QueryController extends \Controller
             // Fetch the results, only with the necessary field
             // If it's a creator and the index is active, also search in the name variant_set(variant, value)
 
-            $query = array(
-                $searchKey => array(
-                    '$regex' => '.*' . $searchVal . '.*',
-                    '$options' => 'i'
-                    ),
-                );
+            // Make a distinction between objectName and objectDetail (=> title or objectNumber)
+            $query = array();
 
-            // Make the query and only retrieve the field that matches the search key
-            $cursor = $works->find($query, array($searchKey => 1))->limit(self::$SUGGEST_PAGE_SIZE);
+            if ($searchKey == 'objectName') {
 
-            if (!$cursor->hasNext()) {
-                return Response::json(array());
-            }
+                $query = array(
+                    'objectName' => array(
+                        '$regex' => '.*' . $searchVal . '.*',
+                        '$options' => 'i'
+                        ),
+                    );
 
-            $results = array();
+                // Make the query and only retrieve the field that matches the search key
+                $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
 
-            foreach ($cursor as $result) {
-                if (is_array($result[$searchKey])) {
+                if (!$cursor->hasNext()) {
+                    return Response::json(array());
+                }
 
-                    foreach ($result[$searchKey] as $val) {
-                        if (!in_array($val, $results)) {
-                            array_push($results, $val);
+                $results = array();
+
+                foreach ($cursor as $result) {
+                    if (is_array($result[$searchKey])) {
+
+                        foreach ($result[$searchKey] as $val) {
+                            if (!in_array($val, $results)) {
+                                array_push($results, $val);
+                            }
                         }
-                    }
-                } else {
-                    if (!in_array($result[$searchKey], $results)) {
-                        array_push($results, $result[$searchKey]);
+                    } else {
+                        if (!in_array($result[$searchKey], $results)) {
+                            array_push($results, $result[$searchKey]);
+                        }
                     }
                 }
 
+                return Response::json($results);
+
+            } else {
+
+                $query = array(
+                            '$or' => array(
+                                array(
+                                    'objectNumber' => array(
+                                        '$regex' => '.*' . $searchVal . '.*',
+                                        '$options' => 'i'
+                                    )
+                                ),
+                                array(
+                                    'title' => array(
+                                        '$regex' => '.*' . $searchVal . '.*',
+                                        '$options' => 'i'
+                                    )
+                                )
+                            )
+                        );
+
+                // Make the query and only retrieve the field that matches the search key
+                $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
+
+                if (!$cursor->hasNext()) {
+                    return Response::json(array());
+                }
+
+                $results = array();
+
+                foreach ($cursor as $result) {
+                    if (is_array($result['title'])) {
+
+                        foreach ($result['title'] as $val) {
+                            if (!in_array($val, $results)) {
+                                array_push($results, $val);
+                            }
+                        }
+                    } else {
+                        if (!in_array($result['title'], $results)) {
+                            array_push($results, $result['title']);
+                        }
+                    }
+
+                    if (is_array($result['objectNumber'])) {
+
+                        foreach ($result['objectNumber'] as $val) {
+                            if (!in_array($val, $results)) {
+                                array_push($results, $val);
+                            }
+                        }
+                    } else {
+                        if (!in_array($result['objectNumber'], $results)) {
+                            array_push($results, $result['objectNumber']);
+                        }
+                    }
+                }
+
+                return Response::json($results);
             }
         }
-
-        return Response::json($results);
     }
 
     /**
