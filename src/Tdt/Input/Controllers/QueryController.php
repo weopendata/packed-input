@@ -17,7 +17,7 @@ class QueryController extends \Controller
 
     protected static $DB_NAME = 'packed';
 
-    protected static $SUGGEST_PAGE_SIZE = 100;
+    protected static $SUGGEST_PAGE_SIZE = 1000;
 
     protected static $QUERY_PAGE_SIZE = 100;
 
@@ -307,7 +307,7 @@ class QueryController extends \Controller
             }
 
             // Make the query and only retrieve the field that matches the search key
-            $cursor = $artists->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
+            $cursor = $artists->find($query);
 
             if (!$cursor->hasNext()) {
                 return Response::json(array());
