@@ -48,7 +48,7 @@ class QueryController extends \Controller
         $creator = \Input::get('creator');
 
         // Check if index is true or false
-        $index = \Input::get('index', false);
+        $index = \Input::get('index', true);
 
         $index = filter_var($index, FILTER_VALIDATE_BOOLEAN);
 
@@ -170,7 +170,7 @@ class QueryController extends \Controller
             $filter = array('$and' => $filter);
 
             // Find the works matching the filter
-            $worksCursor = $works->find($filter, $properties);
+            $worksCursor = $works->find($filter, $properties)->skip($offset)->limit($limit);
 
             foreach ($worksCursor as $work) {
 
@@ -333,7 +333,7 @@ class QueryController extends \Controller
         $searchKey = '';
 
         // Check if index is active
-        $index = \Input::get('index', false);
+        $index = \Input::get('index', true);
 
         $index = filter_var($index, FILTER_VALIDATE_BOOLEAN);
 

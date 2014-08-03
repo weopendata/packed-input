@@ -35,6 +35,8 @@ Go to your app/config/database.php file and add a mongodb connection:
 
 In order to notify the main application of the existence of this package, add the service provider to the configuration of the main application. This is done by simply adding Tdt\Input\InputServiceProvider to the providers array in app/config/app.php.
 
+Publish assets `php artisan asset:publish --bench=packed-input`
+
 # Configure jobs
 
 An ETL process can be added using the REST interface

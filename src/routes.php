@@ -29,3 +29,5 @@ Route::get('api/stats/normalizedworks', 'Tdt\Input\Controllers\InstitutionStatCo
 Route::get('api/query', 'Tdt\Input\Controllers\QueryController@handle');
 
 Route::get('api/suggest', 'Tdt\Input\Controllers\QueryController@suggest');
+
+Route::any('/', 'Tdt\Input\Controllers\UIController@index');
