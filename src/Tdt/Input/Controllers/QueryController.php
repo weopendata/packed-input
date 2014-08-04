@@ -122,7 +122,7 @@ class QueryController extends \Controller
                             foreach ($worksCursor as $work) {
                                 foreach ($work['workPid'] as $workPid) {
 
-                                    if (empty($results[$workPid])) {
+                                    if (empty($results['results'][$workPid])) {
                                         $results['results'][$workPid] = array();
                                     }
 
@@ -194,17 +194,14 @@ class QueryController extends \Controller
 
                         foreach ($work['workPid'] as $workPid) {
 
-                            if (empty($results[$workPid])) {
+                            if (empty($results['results'][$workPid])) {
                                 $results['results'][$workPid] = array();
                             }
 
                             array_push($results['results'][$workPid], $work);
                             $results['count']++;
                         }
-
                     }
-
-                    return \Response::json($results);
                 }
 
                 break;
