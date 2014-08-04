@@ -35,18 +35,6 @@ class QueryController extends \Controller
 
         $offset = \Input::get('offset', 0);
 
-        // If nothing is given, return a 400
-        if (empty($input)) {
-            \App::abort(400, "Please provide a parameter with your request (objectNumber, objectName, creator, title).");
-        }
-
-        $results = array();
-
-        // Check for creator related parameters
-        $artistResults = array();
-
-        $creator = \Input::get('creator');
-
         // Check if index is true or false
         $index = \Input::get('index', false);
 
@@ -57,153 +45,161 @@ class QueryController extends \Controller
 
         $normalized = filter_var($normalized, FILTER_VALIDATE_BOOLEAN);
 
-        // If a creator has been passed, search for matching
-        // creatorIds in the artist collection, this collection
-        // contains name variants and offers better search results (if index is set to true)
-        if (!empty($creator)) {
+        // If nothing is given, return a 400
+        if (empty($input)) {
+            \App::abort(400, "Please provide a parameter with your request (objectNumber, objectName, creator, title).");
+        }
 
-            // Start from artists, and find related works through the
-            // institutions collection
+        // Check if the query needs to be based on enriched data or not
+        $enriched = \Input::get('enriched', false);
 
-            $artists = $this->getCollection('artists');
+        $enriched = filter_var($enriched, FILTER_VALIDATE_BOOLEAN);
 
-            $works = $this->getCollection('institutions');
+        $creator = \Input::get('creator');
 
-            $filter = array(
-                        'creator' => array(
-                            '$regex' => $creator,
-                            '$options' => 'i'
+        $results = array();
+
+        if ($enriched) {
+
+            // If a creator has been passed, search for matching
+            // creatorIds in the artist collection, this collection
+            // contains name variants and offers better search results (if index is set to true)
+            if (!empty($creator)) {
+
+                // Start from artists, and find related works through the
+                // institutions collection
+                $artists = $this->getCollection('artists');
+
+                $works = $this->getCollection('institutions');
+
+                // Define which properties we don't want
+                $properties = array(
+                    '_id' => 0,
+                    'created_at' => 0,
+                    'updated_at' => 0,
+                );
+
+                $filter = array(
+                    '$or' => array(
+                        array(
+                            'uniqueNameVariants' => array(
+                                '$regex' => '.*' . $creator . '.*',
+                                '$options' => 'i'
+                                ),
+                            ), array(
+                            'creator' => array(
+                                '$regex' => '.*' . $creator . '.*',
+                                '$options' => 'i'
+                                )
+
+                            )
                         )
                     );
 
-            // Define which properties we don't want
-            $properties = array(
+                $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
+
+                // Per artist, get the resulting works and group them per WorkPid
+                foreach ($artistCursor as $artist) {
+
+                    if (!empty($artist['creatorId'])) {
+
+                        // Foreach artist, search for accompanying works
+                        $creatorFilter = array('creatorId' => $artist['creatorId']);
+
+                        $worksFilter = $this->buildWorksFilter();
+
+                        $filter = array($creatorFilter);
+
+                        foreach ($worksFilter as $workFilter) {
+                            array_push($filter, $workFilter);
+                        }
+
+                        $filter = array('$and' => $filter);
+
+                        $properties = array(
                             '_id' => 0,
-                            'created_at' => 0,
+                            'dateIso8601Range' => 0,
                             'updated_at' => 0,
-                        );
+                            'created_at' => 0,
+                            );
 
-            if ($index) {
+                        $worksCursor = $works->find($filter, $properties);
 
-                $filter = array(
-                            '$or' => array(
-                                array(
-                                    'uniqueNameVariants' => array(
-                                        '$regex' => '.*' . $creator . '.*',
-                                        '$options' => 'i'
-                                    ),
-                                ), array(
-                                    'creator' => array(
-                                        '$regex' => '.*' . $creator . '.*',
-                                        '$options' => 'i'
-                                    )
+                        // Group on workPid and add the artist
+                        foreach ($worksCursor as $work) {
+                            foreach ($work['workPid'] as $workPid) {
 
-                                )
-                            )
-                        );
-            }
+                                if (empty($results[$workPid])) {
+                                    $results[$workPid] = array();
+                                }
 
-            $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
+                                // Add the artist to the work
+                                $work['artist'] = $artist;
 
-            foreach ($artistCursor as $artist) {
-
-                if (!empty($artist['creatorId'])) {
-
-                    // Foreach artist, search for accompanying works
-                    $creatorFilter = array('creatorId' => $artist['creatorId']);
-
-                    $worksFilter = $this->buildWorksFilter();
-
-                    $filter = array($creatorFilter);
-
-                    foreach ($worksFilter as $workFilter) {
-                        array_push($filter, $workFilter);
-                    }
-
-                    $filter = array('$and' => $filter);
-
-                    $properties = array(
-                                    '_id' => 0,
-                                    'dateIso8601Range' => 0,
-                                    'updated_at' => 0,
-                                    'created_at' => 0,
-                                );
-
-                    $worksCursor = $works->find($filter, $properties);
-
-                    $artist['works'] = array();
-
-                    foreach ($worksCursor as $work) {
-                        array_push($artist['works'], $work);
-                    }
-
-                    if (!empty($artist['works']) && !empty($worksFilter)) {
-                        array_push($artistResults, $artist);
-                    } else if (empty($worksFilter)) {
-                        array_push($artistResults, $artist);
+                                array_push($results[$workPid], $work);
+                            }
+                        }
                     }
                 }
-            }
 
-            $results['artists'] = $artistResults;
+                return \Response::json($results);
 
-        } else {
+            } else {
 
-            // Start from institutions collections (= works) and find
-            // related artists and objects
-            $workResults = array();
+                $filter = $this->buildWorksFilter();
 
-            $filter = $this->buildWorksFilter();
+                // Get the objects with the build up filter
+                $works = $this->getCollection('institutions');
+                $objects = $this->getCollection('objects');
+                $artists = $this->getCollection('artists');
 
-            // Get the objects with the build up filter
-            $works = $this->getCollection('institutions');
-            $objects = $this->getCollection('objects');
-            $artists = $this->getCollection('artists');
+                // Properties that don't need to be returned
+                $properties = array(
+                    '_id' => 0,
+                    'created_at' => 0,
+                    'updated_at' => 0,
+                    );
 
-            // Properties that don't need to be returned
-            $properties = array(
-                            '_id' => 0,
-                            'created_at' => 0,
-                            'updated_at' => 0,
-                        );
-
-            $filter = array('$and' => $filter);
+                $filter = array('$and' => $filter);
 
             // Find the works matching the filter
-            $worksCursor = $works->find($filter, $properties);
+                $worksCursor = $works->find($filter, $properties);
 
-            foreach ($worksCursor as $work) {
+                foreach ($worksCursor as $work) {
 
-                if (!empty($work['objectNameId'])) {
+                    if (!empty($work['objectNameId'])) {
 
-                    $filter = array('objectNameId' => $work['objectNameId']);
+                        $filter = array('objectNameId' => $work['objectNameId']);
 
-                    $objectCursor = $objects->find($filter, $properties);
+                        $objectCursor = $objects->find($filter, $properties);
 
-                    $work['objects'] = array();
+                        $work['objects'] = array();
 
-                    foreach ($objectCursor as $object) {
-                        array_push($work['objects'], $object);
+                        foreach ($objectCursor as $object) {
+                            array_push($work['objects'], $object);
+                        }
                     }
+
+                    if (!empty($work['creatorId'])) {
+
+                        $filter = array('creatorId' => $work['creatorId']);
+
+                        $artistCursor = $artists->find($filter, $properties);
+
+                        $work['artists'] = array();
+
+                        foreach ($artistCursor as $artist) {
+                            array_push($work['artists'], $artist);
+                        }
+                    }
+
+                    array_push($workResults, $work);
                 }
 
-                if (!empty($work['creatorId'])) {
-
-                    $filter = array('creatorId' => $work['creatorId']);
-
-                    $artistCursor = $artists->find($filter, $properties);
-
-                    $work['artists'] = array();
-
-                    foreach ($artistCursor as $artist) {
-                        array_push($work['artists'], $artist);
-                    }
-                }
-
-                array_push($workResults, $work);
+                $results['works'] = $workResults;
             }
+        } else {
 
-            $results['works'] = $workResults;
         }
 
         return \Response::json($results);
@@ -242,18 +238,18 @@ class QueryController extends \Controller
 
             $clause = array(
                 '$or' => array(
-                        array(
-                            'objectNumber' => array(
-                                '$regex' => '.*' . $filterParameters['objectDetail'] . '.*',
-                                '$options' => 'i'
+                    array(
+                        'objectNumber' => array(
+                            '$regex' => '.*' . $filterParameters['objectDetail'] . '.*',
+                            '$options' => 'i'
                             )
                         ), array(
-                            'title' => array(
-                                '$regex' => '.*' . $filterParameters['objectDetail'] . '.*',
-                                '$options' => 'i'
+                        'title' => array(
+                            '$regex' => '.*' . $filterParameters['objectDetail'] . '.*',
+                            '$options' => 'i'
                             )
                         )
-                    )
+                        )
                 );
 
             array_push($and, $clause);
@@ -293,23 +289,23 @@ class QueryController extends \Controller
             if ($normalized) {
 
                 $clause = array(
-                            'dateIso8601Range' => array(
-                                '$gte' => (int) $startDate,
-                                '$lte' => (int) $endDate,
-                            )
-                        );
+                    'dateIso8601Range' => array(
+                        '$gte' => (int) $startDate,
+                        '$lte' => (int) $endDate,
+                        )
+                    );
 
                 array_push($and, $clause);
             } else {
 
                 $clause = array(
-                            '$or' => array(
-                                array('dateStartValue' => (string) $startDate),
-                                array('dateStartValue' => (string) $endDate),
-                                array('dateEndValue' => (string) $startDate),
-                                array('dateEndValue' => (string) $endDate)
-                            )
-                        );
+                    '$or' => array(
+                        array('dateStartValue' => (string) $startDate),
+                        array('dateStartValue' => (string) $endDate),
+                        array('dateEndValue' => (string) $startDate),
+                        array('dateEndValue' => (string) $endDate)
+                        )
+                    );
 
                 array_push($and, $clause);
             }
@@ -368,8 +364,8 @@ class QueryController extends \Controller
                 $searchKey => array(
                     '$regex' => '.*' . $searchVal . '.*',
                     '$options' => 'i',
-                ),
-            );
+                    ),
+                );
 
             if ($index) {
 
@@ -459,21 +455,21 @@ class QueryController extends \Controller
             } else {
 
                 $query = array(
-                            '$or' => array(
-                                array(
-                                    'objectNumber' => array(
-                                        '$regex' => '.*' . $searchVal . '.*',
-                                        '$options' => 'i'
-                                    )
-                                ),
-                                array(
-                                    'title' => array(
-                                        '$regex' => '.*' . $searchVal . '.*',
-                                        '$options' => 'i'
-                                    )
+                    '$or' => array(
+                        array(
+                            'objectNumber' => array(
+                                '$regex' => '.*' . $searchVal . '.*',
+                                '$options' => 'i'
+                                )
+                            ),
+                        array(
+                            'title' => array(
+                                '$regex' => '.*' . $searchVal . '.*',
+                                '$options' => 'i'
                                 )
                             )
-                        );
+                        )
+                    );
 
                 // Make the query and only retrieve the field that matches the search key
                 $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
