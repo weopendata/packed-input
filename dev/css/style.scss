@@ -14,7 +14,7 @@ body{
     font-size: 12px;
 }
 
-p, label, table tr td, table thead tr th{
+p, label, table tr td, table thead tr th, li{
     font-size: 12px;
 }
 
@@ -56,6 +56,7 @@ input, textarea{
 
 button[type=submit]{
     margin-right: 10px;
+    margin-bottom: 0px;
     width: 100px;
 }
 

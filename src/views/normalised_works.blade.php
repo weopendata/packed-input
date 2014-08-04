@@ -1,11 +1,11 @@
-<fieldset ng:if='simple_works'>
-    <legend>Simple</legend>
+<fieldset ng:if='normalised_works'>
+    <legend>Normalised</legend>
 
     <p>
-        <kbd>@{{ simple_works.count | resultCount }}</kbd>
+        <kbd>@{{ normalised_works.count | resultCount }}</kbd>
     </p>
 
-    <div ng:repeat='pid in simple_works.results'>
+    <div ng:repeat='pid in normalised_works.results'>
 
         <b>@{{ pid[0].workPid[0] }}</b>
         <ul>
