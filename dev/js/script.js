@@ -8,12 +8,14 @@ $('.switch').on('change', buildQueryObj);
 function enablingSwitches() {
     var row = $(this).closest('.row');
 
+    // Enable / disable row
     if ($('input', $(this)).is(':checked')) {
         $('input', row).prop('disabled', false);
     } else {
         $('input', row).prop('disabled', true);
     }
 
+    // Re-enable switch
     $('input', this).prop('disabled', false);
 }
 
@@ -35,13 +37,7 @@ function buildQueryObj() {
 
         // Leave out disabled properties
         if(!e.prop('disabled')){
-            if(e.is('input[type=checkbox]')){
-                if(!e.is(':checked')){
-                    queryObj[e.attr('id')] = 'false';
-                }
-            }else{
-                queryObj[e.attr('id')] = e.val();
-            }
+            queryObj[e.attr('id')] = e.val();
         }
     })
 
@@ -73,17 +69,14 @@ function init() {
         // Init fields based on query
         for(var key in obj){
             var value = obj[key];
-            if(value == 'false'){
-                $('#' + key).prop('checked', false);
-            }else{
-                $('#' + key).val(decodeURIComponent(value).replace(/\+/g, ' '));
+            $('#' + key).val(decodeURIComponent(value).replace(/\+/g, ' '));
 
-                var row = $('#' + key).closest('.row');
-                $('input[type=checkbox]', row).prop('checked', true);
-                $('input', row).prop('disabled', false);
-            }
+            var row = $('#' + key).closest('.row');
+            $('input[type=checkbox]', row).prop('checked', true);
+            $('input', row).prop('disabled', false);
         }
 
+        // Search on link click
         $('form').submit();
     }
 

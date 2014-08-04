@@ -1,20 +1,31 @@
 function search(e){
     e.preventDefault();
 
+    // Angular controller
     var controller = angular.element($('#results')).scope();
+
+    // Get form and submit button
     var form = $(e.target);
     var submit = $('button[type=submit]', form);
+
+    // Disable submit button
     submit.prop('disabled', true);
     submit.html("<i class='fa fa-spin fa-spinner'></i>")
+
+    // Clear previous errors
     $('.row', form).removeClass('error');
+
+    // Clear previous results
     $('#searchStatus', form).html('');
     controller.reset();
+
+    // Rebuild query object
     buildQueryObj();
 
+    // Build data object
     var localQueryObject = {};
     var validated = true;
     var minimumOne = false;
-    localQueryObject.normalized = (queryObj.normalized == 'false')? 'false' : 'true';
     $('form input[data-property]:not(:disabled)').each(function(){
         var value = $(this).val();
         localQueryObject[$(this).data('property')] = value;
@@ -28,46 +39,27 @@ function search(e){
     });
 
     if(!validated){
-        submit.html('Zoek');
-        submit.prop('disabled', false);
+        resetForm();
     }else if(!minimumOne){
         $('#searchStatus', form).html('Kies minstens één van de bovenstaande filters.');
-        submit.html('Zoek');
-        submit.prop('disabled', false);
+        resetForm();
     }else{
-        $.ajax(
-            baseURL + "api/query?",
-            {
-                data: localQueryObject,
-                method: 'GET',
-                success: function(data) {
-                    var innerData = {};
-                    if('artists' in data){
-                        innerData = data.artists;
-                        controller.loadArtists(innerData);
-                    }else{
-                        innerData = data.works;
-                        controller.loadWorks(innerData);
-                    }
-
-                    updateSearchStatus(innerData);
-
-                    submit.html('Zoek');
-                    submit.prop('disabled', false);
-                },
-                error: function(data) {
-                    var error = JSON.parse(data.responseText);
-                    error = error.error;
-                    alertify.error('An error occurred: ' + data.status + ' - ' + error.message);
-
-                    submit.html('Zoek');
-                    submit.prop('disabled', false);
-                }
-            }
-        );
+        controller.loadWorks(localQueryObject);
     }
 }
 
+/**
+ * Reset form for next search
+ */
+function resetForm() {
+    var submit = $('button[type=submit]');
+    submit.html('Zoek');
+    submit.prop('disabled', false);
+}
+
+/**
+ * Search status text
+ */
 function updateSearchStatus(data) {
     var count = data.length;
 
@@ -79,5 +71,5 @@ function updateSearchStatus(data) {
         status = count + ' resultaten';
     }
 
-    $('#searchStatus').delay(1000).html(status + ' gevonden.')
+    $('#searchStatus').html(status + ' gevonden.');
 }

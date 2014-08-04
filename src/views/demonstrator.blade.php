@@ -75,38 +75,6 @@
                 </div>
             </fieldset>
         </div>
-        <div class="small-12 large-4 columns">
-            <fieldset>
-                <legend>Opties</legend>
-
-                <div class="row">
-                    <div class="small-5 columns">
-                        <label for="index" class="right">Gebruik de index</label>
-                    </div>
-                    <div class="small-7 columns">
-                        <div class="switch tiny left round inline">
-                            <input id="index" type="checkbox" checked>
-                            <label for="index"></label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="small-5 columns">
-                        <label for="normalized" class="right">Normalisatie</label>
-                    </div>
-                    <div class="small-7 columns">
-                        <div class="switch tiny left round inline">
-                            <input id="normalized" type="checkbox" checked>
-                            <label for="normalized"></label>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="small-12 columns">
-                    </div>
-                </div>
-            </fieldset>
-        </div>
     </div>
 </form>
 @stop
