@@ -35,171 +35,288 @@ class QueryController extends \Controller
 
         $offset = \Input::get('offset', 0);
 
-        // Check if index is true or false
-        $index = \Input::get('index', false);
-
-        $index = filter_var($index, FILTER_VALIDATE_BOOLEAN);
-
-        // Check if dates have to search in a normalized way or not
-        $normalized = \Input::get('normalized', false);
-
-        $normalized = filter_var($normalized, FILTER_VALIDATE_BOOLEAN);
+        $type = \Input::get('type', 'normalised');
 
         // If nothing is given, return a 400
         if (empty($input)) {
             \App::abort(400, "Please provide a parameter with your request (objectNumber, objectName, creator, title).");
         }
 
-        // Check if the query needs to be based on enriched data or not
-        $enriched = \Input::get('enriched', false);
-
-        $enriched = filter_var($enriched, FILTER_VALIDATE_BOOLEAN);
-
         $creator = \Input::get('creator');
 
         $results = array();
 
-        if ($enriched) {
+        switch ($type) {
+            case 'normalised':
 
-            // If a creator has been passed, search for matching
-            // creatorIds in the artist collection, this collection
-            // contains name variants and offers better search results (if index is set to true)
-            if (!empty($creator)) {
+                // If a creator has been passed, search for matching
+                // creatorIds in the artist collection, this collection
+                // contains name variants and offers better search results (if index is set to true)
+                if (!empty($creator)) {
 
-                // Start from artists, and find related works through the
-                // institutions collection
-                $artists = $this->getCollection('artists');
+                    // Start from artists, and find related works through the
+                    // institutions collection
+                    $artists = $this->getCollection('artists');
 
-                $works = $this->getCollection('institutions');
+                    $works = $this->getCollection('institutions');
 
-                // Define which properties we don't want
-                $properties = array(
-                    '_id' => 0,
-                    'created_at' => 0,
-                    'updated_at' => 0,
-                );
+                    // Define which properties we don't want
+                    $properties = array(
+                        '_id' => 0,
+                        'created_at' => 0,
+                        'updated_at' => 0,
+                        );
 
-                $filter = array(
-                    '$or' => array(
-                        array(
-                            'uniqueNameVariants' => array(
-                                '$regex' => '.*' . $creator . '.*',
-                                '$options' => 'i'
-                                ),
-                            ), array(
-                            'creator' => array(
-                                '$regex' => '.*' . $creator . '.*',
-                                '$options' => 'i'
+                    $filter = array(
+                        '$or' => array(
+                            array(
+                                'uniqueNameVariants' => array(
+                                    '$regex' => '.*' . $creator . '.*',
+                                    '$options' => 'i'
+                                    ),
+                                ), array(
+                                'creator' => array(
+                                    '$regex' => '.*' . $creator . '.*',
+                                    '$options' => 'i'
+                                    )
+
                                 )
+                                )
+                        );
 
-                            )
-                        )
-                    );
+                    $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
 
-                $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
+                    // Per artist, get the resulting works and group them per WorkPid
+                    foreach ($artistCursor as $artist) {
 
-                // Per artist, get the resulting works and group them per WorkPid
-                foreach ($artistCursor as $artist) {
+                        if (!empty($artist['creatorId'])) {
 
-                    if (!empty($artist['creatorId'])) {
+                            // Foreach artist, search for accompanying works
+                            $creatorFilter = array('creatorId' => $artist['creatorId']);
 
-                        // Foreach artist, search for accompanying works
-                        $creatorFilter = array('creatorId' => $artist['creatorId']);
+                            $worksFilter = $this->buildWorksFilter();
 
-                        $worksFilter = $this->buildWorksFilter();
+                            $filter = array($creatorFilter);
 
-                        $filter = array($creatorFilter);
+                            foreach ($worksFilter as $workFilter) {
+                                array_push($filter, $workFilter);
+                            }
 
-                        foreach ($worksFilter as $workFilter) {
-                            array_push($filter, $workFilter);
-                        }
+                            $filter = array('$and' => $filter);
 
-                        $filter = array('$and' => $filter);
+                            $properties = array(
+                                '_id' => 0,
+                                'dateIso8601Range' => 0,
+                                'updated_at' => 0,
+                                'created_at' => 0,
+                                );
 
-                        $properties = array(
-                            '_id' => 0,
-                            'dateIso8601Range' => 0,
-                            'updated_at' => 0,
-                            'created_at' => 0,
-                            );
+                            $worksCursor = $works->find($filter, $properties);
 
-                        $worksCursor = $works->find($filter, $properties);
+                            // Group on workPid and add the artist
+                            foreach ($worksCursor as $work) {
+                                foreach ($work['workPid'] as $workPid) {
 
-                        // Group on workPid and add the artist
-                        foreach ($worksCursor as $work) {
-                            foreach ($work['workPid'] as $workPid) {
+                                    if (empty($results[$workPid])) {
+                                        $results[$workPid] = array();
+                                    }
 
-                                if (empty($results[$workPid])) {
-                                    $results[$workPid] = array();
+                                    // Add the artist to the work
+                                    $work['artist'] = $artist;
+
+                                    array_push($results[$workPid], $work);
                                 }
-
-                                // Add the artist to the work
-                                $work['artist'] = $artist;
-
-                                array_push($results[$workPid], $work);
                             }
                         }
                     }
+
+                } else {
+
+                    $filter = $this->buildWorksFilter();
+
+                    // Get the objects with the build up filter
+                    $works = $this->getCollection('institutions');
+                    $objects = $this->getCollection('objects');
+                    $artists = $this->getCollection('artists');
+
+                    // Properties that don't need to be returned
+                    $properties = array(
+                        '_id' => 0,
+                        'created_at' => 0,
+                        'updated_at' => 0,
+                        );
+
+                    $filter = array('$and' => $filter);
+
+                    // Find the works matching the filter
+                    $worksCursor = $works->find($filter, $properties)->skip($offset)->limit($limit);
+
+                    foreach ($worksCursor as $work) {
+
+                        if (!empty($work['objectNameId'])) {
+
+                            $filter = array('objectNameId' => $work['objectNameId']);
+
+                            $objectCursor = $objects->find($filter, $properties);
+
+                            $work['objects'] = array();
+
+                            foreach ($objectCursor as $object) {
+                                array_push($work['objects'], $object);
+                            }
+                        }
+
+                        if (!empty($work['creatorId'])) {
+
+                            $filter = array('creatorId' => $work['creatorId']);
+
+                            $artistCursor = $artists->find($filter, $properties);
+
+                            $work['artists'] = array();
+
+                            foreach ($artistCursor as $artist) {
+                                array_push($work['artists'], $artist);
+                            }
+                        }
+
+                        foreach ($work['workPid'] as $workPid) {
+
+                            if (empty($results[$workPid])) {
+                                $results[$workPid] = array();
+                            }
+
+                            array_push($results[$workPid], $work);
+                        }
+
+                    }
+
+                    return \Response::json($results);
                 }
 
-                return \Response::json($results);
+                break;
+            case 'index':
+                echo "TODO";
+                break;
+            default:
+                // Return results based on non-enrichment data
+                // If a creator has been passed, search for matching
+                // creatorIds in the artist collection, this collection
+                // contains name variants and offers better search results (if index is set to true)
+                if (!empty($creator)) {
 
-            } else {
+                    // Start from artists, and find related works through the
+                    // institutions collection
+                    $artists = $this->getCollection('artists');
 
-                $filter = $this->buildWorksFilter();
+                    $works = $this->getCollection('institutions');
 
-                // Get the objects with the build up filter
-                $works = $this->getCollection('institutions');
-                $objects = $this->getCollection('objects');
-                $artists = $this->getCollection('artists');
-
-                // Properties that don't need to be returned
-                $properties = array(
-                    '_id' => 0,
-                    'created_at' => 0,
-                    'updated_at' => 0,
+                    // Define which properties we don't want
+                    $properties = array(
+                        '_id' => 0,
+                        'created_at' => 0,
+                        'updated_at' => 0,
                     );
 
-                $filter = array('$and' => $filter);
+                    $filter = array(
+                        'creator' => array(
+                            '$regex' => $creator,
+                            '$options' => 'i'
+                        )
+                    );
 
-            // Find the works matching the filter
-                $worksCursor = $works->find($filter, $properties);
+                    $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
 
-                foreach ($worksCursor as $work) {
+                    // Per artist, get the resulting works and group them per WorkPid
+                    foreach ($artistCursor as $artist) {
 
-                    if (!empty($work['objectNameId'])) {
+                        if (!empty($artist['creatorId'])) {
 
-                        $filter = array('objectNameId' => $work['objectNameId']);
+                            // Foreach artist, search for accompanying works
+                            $creatorFilter = array('creatorId' => $artist['creatorId']);
 
-                        $objectCursor = $objects->find($filter, $properties);
+                            $worksFilter = $this->buildWorksFilter();
 
-                        $work['objects'] = array();
+                            $filter = array($creatorFilter);
 
-                        foreach ($objectCursor as $object) {
-                            array_push($work['objects'], $object);
+                            foreach ($worksFilter as $workFilter) {
+                                array_push($filter, $workFilter);
+                            }
+
+                            $filter = array('$and' => $filter);
+
+                            $properties = array(
+                                '_id' => 0,
+                                'dateIso8601Range' => 0,
+                                'updated_at' => 0,
+                                'created_at' => 0,
+                                );
+
+                            $worksCursor = $works->find($filter, $properties);
+
+                            // Group on dataPid and add the artist
+                            foreach ($worksCursor as $work) {
+
+                                // Add the artist to the work
+                                $work['artist'] = $artist;
+                                array_push($results, $work);
+                            }
                         }
                     }
 
-                    if (!empty($work['creatorId'])) {
+                    return \Response::json($results);
 
-                        $filter = array('creatorId' => $work['creatorId']);
+                } else {
 
-                        $artistCursor = $artists->find($filter, $properties);
+                    $filter = $this->buildWorksFilter();
 
-                        $work['artists'] = array();
+                    // Get the objects with the build up filter
+                    $works = $this->getCollection('institutions');
+                    $objects = $this->getCollection('objects');
+                    $artists = $this->getCollection('artists');
 
-                        foreach ($artistCursor as $artist) {
-                            array_push($work['artists'], $artist);
+                    // Properties that don't need to be returned
+                    $properties = array(
+                        '_id' => 0,
+                        'created_at' => 0,
+                        'updated_at' => 0,
+                        );
+
+                    $filter = array('$and' => $filter);
+
+                    // Find the works matching the filter
+                    $worksCursor = $works->find($filter, $properties)->skip($offset)->limit($limit);
+
+                    foreach ($worksCursor as $work) {
+
+                        if (!empty($work['objectNameId'])) {
+
+                            $filter = array('objectNameId' => $work['objectNameId']);
+
+                            $objectCursor = $objects->find($filter, $properties);
+
+                            $work['objects'] = array();
+
+                            foreach ($objectCursor as $object) {
+                                array_push($work['objects'], $object);
+                            }
                         }
-                    }
 
-                    array_push($workResults, $work);
+                        if (!empty($work['creatorId'])) {
+
+                            $filter = array('creatorId' => $work['creatorId']);
+
+                            $artistCursor = $artists->find($filter, $properties);
+
+                            $work['artists'] = array();
+
+                            foreach ($artistCursor as $artist) {
+                                array_push($work['artists'], $artist);
+                            }
+                        }
+
+                        array_push($results, $work);
+                    }
                 }
-
-                $results['works'] = $workResults;
-            }
-        } else {
-
         }
 
         return \Response::json($results);
@@ -214,10 +331,10 @@ class QueryController extends \Controller
     {
         $parameters = array('objectDetail', 'objectName', 'startDate', 'endDate');
 
-        // Check if dates have to search in a normalized way or not
-        $normalized = \Input::get('normalized', false);
+        // Check if dates have to search in a enriched way or not
+        $enriched = \Input::get('enriched', false);
 
-        $normalized = filter_var($normalized, FILTER_VALIDATE_BOOLEAN);
+        $enriched = filter_var($enriched, FILTER_VALIDATE_BOOLEAN);
 
         $filterParameters = array();
 
@@ -286,7 +403,7 @@ class QueryController extends \Controller
                 $endDate = 3000;
             }
 
-            if ($normalized) {
+            if ($enriched) {
 
                 $clause = array(
                     'dateIso8601Range' => array(
@@ -300,10 +417,10 @@ class QueryController extends \Controller
 
                 $clause = array(
                     '$or' => array(
-                        array('dateStartValue' => (string) $startDate),
-                        array('dateStartValue' => (string) $endDate),
-                        array('dateEndValue' => (string) $startDate),
-                        array('dateEndValue' => (string) $endDate)
+                        array('dateStartValue' => array( '$regex' => '.*' . $startDate . '.*', '$options' => 'i')),
+                        array('dateStartValue' => array( '$regex' => '.*' . $endDate . '.*', '$options' => 'i')),
+                        array('dateEndValue' => array( '$regex' => '.*' . $startDate . '.*', '$options' => 'i')),
+                        array('dateEndValue' => array( '$regex' => '.*' . $endDate . '.*', '$options' => 'i'))
                         )
                     );
 
@@ -327,11 +444,6 @@ class QueryController extends \Controller
 
         $searchVal = '';
         $searchKey = '';
-
-        // Check if index is active
-        $index = \Input::get('index', false);
-
-        $index = filter_var($index, FILTER_VALIDATE_BOOLEAN);
 
         // Scan the query string parameters for a first hit
         foreach (\Input::get() as $key => $val) {
@@ -367,17 +479,15 @@ class QueryController extends \Controller
                     ),
                 );
 
-            if ($index) {
+            $nameVariants = array(
+                'uniqueNameVariants' => array(
+                    '$regex' => '.*' . $searchVal . '.*',
+                    '$options' => 'i'
+                    )
+                );
 
-                $nameVariants = array(
-                    'uniqueNameVariants' => array(
-                        '$regex' => '.*' . $searchVal . '.*',
-                        '$options' => 'i'
-                        )
-                    );
+            $query = array('$or' => array($nameVariants, $query));
 
-                $query = array('$or' => array($nameVariants, $query));
-            }
 
             // Make the query and only retrieve the field that matches the search key
             $cursor = $artists->find($query);
