@@ -86,6 +86,11 @@ class QueryController extends \Controller
 
                     $artistCursor = $artists->find($filter, $properties)->skip($offset)->limit($limit);
 
+                    // Prepare the results array
+                    $results['count'] = 0;
+                    $results['results'] = array();
+
+
                     // Per artist, get the resulting works and group them per WorkPid
                     foreach ($artistCursor as $artist) {
 
@@ -118,13 +123,16 @@ class QueryController extends \Controller
                                 foreach ($work['workPid'] as $workPid) {
 
                                     if (empty($results[$workPid])) {
-                                        $results[$workPid] = array();
+                                        $results['results'][$workPid] = array();
                                     }
 
                                     // Add the artist to the work
                                     $work['artist'] = $artist;
 
-                                    array_push($results[$workPid], $work);
+                                    array_push($results['results'][$workPid], $work);
+
+                                    // Count all of the works
+                                    $results['count']++;
                                 }
                             }
                         }
@@ -150,6 +158,11 @@ class QueryController extends \Controller
 
                     // Find the works matching the filter
                     $worksCursor = $works->find($filter, $properties)->skip($offset)->limit($limit);
+
+                    // Prepare the results array
+                    $results['count'] = 0;
+                    $results['results'] = array();
+
 
                     foreach ($worksCursor as $work) {
 
@@ -182,10 +195,11 @@ class QueryController extends \Controller
                         foreach ($work['workPid'] as $workPid) {
 
                             if (empty($results[$workPid])) {
-                                $results[$workPid] = array();
+                                $results['results'][$workPid] = array();
                             }
 
-                            array_push($results[$workPid], $work);
+                            array_push($results['results'][$workPid], $work);
+                            $results['count']++;
                         }
 
                     }

@@ -77,9 +77,11 @@ class Packedartist extends AMapper
 
         $chunk['phoneticCreator'] = array();
 
-        // Add a phonetic equivalent of the creator
-        foreach ($chunk['creator'] as $creator) {
-            array_push($chunk['phoneticCreator'], soundex($creator));
+        if (!empty($chunk['creator'])) {
+            // Add a phonetic equivalent of the creator
+            foreach ($chunk['creator'] as $creator) {
+                array_push($chunk['phoneticCreator'], soundex($creator));
+            }
         }
 
         $this->log('----- Done mapping data -----');
