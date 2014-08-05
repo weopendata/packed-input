@@ -19,7 +19,7 @@ class QueryController extends \Controller
 
     protected static $SUGGEST_PAGE_SIZE = 1000;
 
-    protected static $QUERY_PAGE_SIZE = 100;
+    protected static $QUERY_PAGE_SIZE = 9999999;
 
     /**
      * Handle the query
@@ -144,7 +144,6 @@ class QueryController extends \Controller
 
         // Per artist, get the resulting works and group them per WorkPid
         foreach ($artistCursor as $artist) {
-
             if (!empty($artist['creatorId'])) {
 
                 // Foreach artist, search for accompanying works
