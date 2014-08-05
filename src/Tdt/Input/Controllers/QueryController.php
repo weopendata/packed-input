@@ -70,7 +70,7 @@ class QueryController extends \Controller
 
                 } else {
 
-                    $results = $this->getIndexedWorks($limit, $offset);
+                    $results = $this->getWorks($limit, $offset);
                 }
 
                 break;

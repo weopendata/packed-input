@@ -95,8 +95,8 @@ button[type=submit]{
 
 fieldset{
     margin-top: 0px;
-}
 
-fieldset > div:last-child > hr {
-    display: none;
+    div:last-child > hr {
+        display: none;
+    }
 }
