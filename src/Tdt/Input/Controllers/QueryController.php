@@ -256,14 +256,23 @@ class QueryController extends \Controller
                 }
             }
 
-            foreach ($work['workPid'] as $workPid) {
+            if (!empty($work['workPid'])) {
+                foreach ($work['workPid'] as $workPid) {
 
-                if (empty($results['results'][$workPid])) {
-                    $results['results'][$workPid] = array();
+                    if (empty($results['results'][$workPid])) {
+                        $results['results'][$workPid] = array();
+                    }
+
+                    array_push($results['results'][$workPid], $work);
+                    $results['count']++;
+                }
+            } else {
+                if (empty($results['results']['-'])) {
+                    $results['results']['-'] = array();
                 }
 
-                array_push($results['results'][$workPid], $work);
                 $results['count']++;
+                array_push($results['results']['-'], $work);
             }
         }
 
