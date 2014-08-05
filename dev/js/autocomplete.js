@@ -24,18 +24,23 @@ $('input[data-autocomplete]').each(function(){
             });
         },
 
-        select: function (event, ui) {
-            return false;
-        },
+        // Force pick a value
+        // select: function (event, ui) {
+        //     return false;
+        // },
 
-        select: function (event, ui) {
-            $(this).val(ui.item ? ui.item : " ");
-        },
+        // select: function (event, ui) {
+        //     $(this).val(ui.item ? ui.item : " ");
+        // },
 
-        change: function (event, ui) {
-            if (!ui.item) {
-                this.value = '';
-            }
+        // change: function (event, ui) {
+        //     if (!ui.item) {
+        //         this.value = '';
+        //     }
+        // }
+    }).keyup(function (e) {
+        if(e.which === 13) {
+            $(".ui-autocomplete").hide();
         }
     });
 })

@@ -1,17 +1,17 @@
-<fieldset ng:if='normalised_works'>
+<fieldset>
     <legend>Normalised</legend>
 
     <p>
         <kbd>@{{ normalised_works.count | resultCount }}</kbd>
     </p>
 
-    <div ng:repeat='pid in normalised_works.results'>
+    <div ng:if='normalised_works' ng:repeat='pid in normalised_works.results'>
 
-        <b>@{{ pid[0].workPid[0] }}</b>
+        <p><strong>@{{ pid[0].workPid[0] }}</strong></p>
         <ul>
             <li ng:repeat='work in pid'>
-                @{{ work.objectNumber }} &ndash; @{{ work.title[0] }}  &ndash; @{{ work.dataprovider }}<br/>
-                <a href='?artist=@{{ work.creator[0] }}'>@{{ work.creator[0] }}</a>
+                @include('input::work_line')
+                &ndash; @{{ work.dataPid }}
             </li>
         </ul>
 

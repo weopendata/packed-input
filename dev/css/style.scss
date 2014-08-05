@@ -73,6 +73,11 @@ button[type=submit]{
     .button-group{
         display: inline-block;
     }
+
+    li{
+        line-height: 15px;
+        margin-bottom: 8px;
+    }
 }
 
 fieldset{
