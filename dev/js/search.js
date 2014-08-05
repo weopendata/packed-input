@@ -44,7 +44,7 @@ function search(e){
         resetForm();
     }else{
         $('#results').show();
-        $('.fa-spin').removeClass('hidden').fadeIn();
+        $('.fa-spin').removeClass('hidden').stop().fadeIn();
         controller.loadWorks(localQueryObject);
     }
 }
