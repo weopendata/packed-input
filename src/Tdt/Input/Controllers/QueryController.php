@@ -688,6 +688,7 @@ class QueryController extends \Controller
 
             $query = array('$or' => array($nameVariants, $query));
 
+            $query = $this->addInstituteToFilter($query);
 
             // Make the query and only retrieve the field that matches the search key
             $cursor = $artists->find($query);
@@ -736,6 +737,8 @@ class QueryController extends \Controller
                         ),
                     );
 
+                $query = $this->addInstituteToFilter($query);
+
                 // Make the query and only retrieve the field that matches the search key
                 $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
 
@@ -780,6 +783,8 @@ class QueryController extends \Controller
                             )
                         )
                     );
+
+                $query = $this->addInstituteToFilter($query);
 
                 // Make the query and only retrieve the field that matches the search key
                 $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
