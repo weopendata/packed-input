@@ -13,8 +13,9 @@ app.controller('ResultCtrl', ['$scope', '$http', function($scope, $http) {
             method: 'GET',
             params: queryObject
         }).success(function(data, status, headers, config) {
-            console.log(data);
             $scope.normalised_works = data;
+
+            $('.results-normalised .fa-spin').fadeOut();
             resetForm();
         }).error(function(data, status, headers, config) {
             // Show errors in alert
@@ -22,6 +23,7 @@ app.controller('ResultCtrl', ['$scope', '$http', function($scope, $http) {
             error = error.error;
             alertify.error('An error occurred: ' + data.status + ' - ' + error.message);
 
+            $('.results-normalised .fa-spin').fadeOut();
             resetForm();
         });
 
@@ -32,8 +34,14 @@ app.controller('ResultCtrl', ['$scope', '$http', function($scope, $http) {
             method: 'GET',
             params: indexQueryObject
         }).success(function(data, status, headers, config) {
-            console.log(data);
-            $scope.index_works = data;
+
+            var object = {};
+            object.count = data.length;
+            object.results = data;
+
+            $scope.index_works = object;
+
+            $('.results-index .fa-spin').fadeOut();
             resetForm();
         }).error(function(data, status, headers, config) {
             // Show errors in alert
@@ -41,6 +49,7 @@ app.controller('ResultCtrl', ['$scope', '$http', function($scope, $http) {
             error = error.error;
             alertify.error('An error occurred: ' + data.status + ' - ' + error.message);
 
+            $('.results-index .fa-spin').fadeOut();
             resetForm();
         });
 
@@ -52,8 +61,13 @@ app.controller('ResultCtrl', ['$scope', '$http', function($scope, $http) {
             method: 'GET',
             params: simpleQueryObject
         }).success(function(data, status, headers, config) {
-            console.log(data);
-            $scope.simple_works = data;
+            var object = {};
+            object.count = data.length;
+            object.results = data;
+
+            $scope.simple_works = object;
+
+            $('.results-simple .fa-spin').fadeOut();
             resetForm();
         }).error(function(data, status, headers, config) {
             // Show errors in alert
@@ -61,6 +75,7 @@ app.controller('ResultCtrl', ['$scope', '$http', function($scope, $http) {
             error = error.error;
             alertify.error('An error occurred: ' + data.status + ' - ' + error.message);
 
+            $('.results-simple .fa-spin').fadeOut();
             resetForm();
         });
 
@@ -83,11 +98,11 @@ app.filter('resultCount', function() {
     return function(count) {
 
         if(count == 0 || count == undefined){
-            status = 'Geen resultaten';
+            status = 'Geen werken';
         }else if(count == 1){
-            status = '1 resultaat';
+            status = '1 werk';
         }else{
-            status = count + ' resultaten';
+            status = count + ' werken';
         }
 
         return status + ' gevonden';

@@ -1,20 +1,24 @@
 <fieldset>
     <legend>Normalised</legend>
 
-    <p>
-        <kbd>@{{ normalised_works.count | resultCount }}</kbd>
-    </p>
+    <i class='fa fa-spin fa-spinner hidden'></i>
 
-    <div ng:if='normalised_works' ng:repeat='pid in normalised_works.results'>
+    <div ng:if='normalised_works'>
+        <p>
+            <kbd>@{{ normalised_works.count | resultCount }}</kbd>
+        </p>
 
-        <p><strong>@{{ pid[0].workPid[0] }}</strong></p>
-        <ul>
-            <li ng:repeat='work in pid'>
-                @include('input::work_line')
-                &ndash; @{{ work.dataPid }}
-            </li>
-        </ul>
+        <div ng:repeat='pid in normalised_works.results'>
 
-        <hr/>
+            <p><strong>@{{ pid[0].workPid[0] }}</strong></p>
+            <ul>
+                <li ng:repeat='work in pid'>
+                    @include('input::work_line')
+                    &ndash; @{{ work.dataPid }}
+                </li>
+            </ul>
+
+            <hr/>
+        </div>
     </div>
 </fieldset>

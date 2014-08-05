@@ -1,13 +1,15 @@
 <fieldset>
     <legend>Indexed</legend>
 
-    <p>
-        <kbd>@{{ index_works.length | resultCount }}</kbd>
-    </p>
+    <i class='fa fa-spin fa-spinner hidden'></i>
 
     <div ng:if='index_works'>
+        <p>
+            <kbd>@{{ index_works.count | resultCount }}</kbd>
+        </p>
+
         <ul>
-            <li ng:repeat='work in index_works'>
+            <li ng:repeat='work in index_works.results'>
                 @include('input::work_line')
             </li>
         </ul>

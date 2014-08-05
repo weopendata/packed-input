@@ -4,6 +4,8 @@
 @import "alertify";
 @import "font-awesome";
 
+$primary-color: #00e6ae;
+
 *{
     outline: none !important;
 }
@@ -77,6 +79,17 @@ button[type=submit]{
     li{
         line-height: 15px;
         margin-bottom: 8px;
+    }
+
+    .results{
+        position: relative;
+    }
+
+    .fa-spin{
+        font-size: 20px;
+        position: absolute;
+        right: 25px;
+        top: 20px;
     }
 }
 

@@ -10,7 +10,6 @@ function search(e){
 
     // Disable submit button
     submit.prop('disabled', true);
-    submit.html("<i class='fa fa-spin fa-spinner'></i>")
 
     // Clear previous errors
     $('.row', form).removeClass('error');
@@ -44,6 +43,8 @@ function search(e){
         $('#searchStatus', form).html('Kies minstens één van de bovenstaande filters.');
         resetForm();
     }else{
+        $('#results').show();
+        $('.fa-spin').removeClass('hidden').fadeIn();
         controller.loadWorks(localQueryObject);
     }
 }
@@ -53,7 +54,6 @@ function search(e){
  */
 function resetForm() {
     var submit = $('button[type=submit]');
-    submit.html('Zoek');
     submit.prop('disabled', false);
 }
 
