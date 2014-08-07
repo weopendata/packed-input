@@ -9,7 +9,7 @@
         </p>
 
         <ul>
-            <li ng:repeat='work in index_works.results'>
+            <li ng:repeat='work in index_works.results' ng:click='viewDetails(work)'>
                 @include('input::work_line')
             </li>
         </ul>

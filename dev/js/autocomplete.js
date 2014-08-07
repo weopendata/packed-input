@@ -18,7 +18,7 @@ $('input[data-autocomplete]').each(function(){
             }
 
             // Fetch results
-            $.getJSON( baseURL + "api/suggest?", localQueryObject, function( data, status, xhr ) {
+            $.getJSON( baseURL + "suggest?", localQueryObject, function( data, status, xhr ) {
                 cache[term] = data;
                 response(data);
             });

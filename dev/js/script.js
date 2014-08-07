@@ -71,7 +71,7 @@ function init() {
             var value = obj[key];
             $('#' + key).val(decodeURIComponent(value).replace(/\+/g, ' '));
 
-            var row = $('#' + key).closest('.row');
+            var row = $('#' + key).closest('.row.parent');
             $('input[type=checkbox]', row).prop('checked', true);
             $('input', row).prop('disabled', false);
         }

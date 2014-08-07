@@ -12,7 +12,7 @@
 
             <p><strong>@{{ pid[0].workPid[0] }}</strong></p>
             <ul>
-                <li ng:repeat='work in pid'>
+                <li ng:repeat='work in pid' ng:click='viewDetails(work)'>
                     @include('input::work_line')
                     &ndash; @{{ work.dataPid }}
                 </li>

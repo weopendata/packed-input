@@ -11,7 +11,7 @@
         <link rel='stylesheet' href='{{ URL::to("packages/packed-input/css/style.css") }}?v={{ Config::get('app.version', 4) }}' type='text/css'/>
     </head>
 
-    <body>
+    <body ng:app='PIDdemonstrator'>
         <div class="row header">
             <div class="large-12 columns">
                 <img src='{{ URL::to("packages/packed-input/img/logo.png") }}' width="215" class=''/>
@@ -21,9 +21,10 @@
         @yield('content')
 
         @include('input::results')
+        @include('input::work_detail')
     </body>
     <script>
-        var baseURL = '{{ URL::to('') }}/';
+        var baseURL = '{{ URL::to('api') }}/';
     </script>
     <script src="{{ URL::to("packages/packed-input/js/script.min.js") }}"></script>
 </html>

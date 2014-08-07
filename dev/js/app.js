@@ -17,12 +17,12 @@ app.controller('ResultCtrl', ['$scope', '$http', '$q', function($scope, $http, $
 
         // Query
         $http({
-            url: baseURL + "api/query",
+            url: baseURL + "query",
             method: 'GET',
             params: queryObject,
             timeout: canceler.promise
         }).success(function(data, status, headers, config) {
-            console.log(data);
+            // console.log(data);
             $scope.normalised_works = data;
 
             $('.results-normalised .fa-spin').stop().fadeOut();
@@ -42,7 +42,7 @@ app.controller('ResultCtrl', ['$scope', '$http', '$q', function($scope, $http, $
         var indexQueryObject = jQuery.extend({'type': 'index'}, queryObject);
 
         $http({
-            url: baseURL + "api/query",
+            url: baseURL + "query",
             method: 'GET',
             params: indexQueryObject,
             timeout: canceler.promise
@@ -71,7 +71,7 @@ app.controller('ResultCtrl', ['$scope', '$http', '$q', function($scope, $http, $
         var simpleQueryObject = jQuery.extend({'type': 'simple'}, queryObject);
 
         $http({
-            url: baseURL + "api/query",
+            url: baseURL + "query",
             method: 'GET',
             params: simpleQueryObject,
             timeout: canceler.promise
@@ -99,7 +99,13 @@ app.controller('ResultCtrl', ['$scope', '$http', '$q', function($scope, $http, $
         $scope.$apply();
     };
 
+    $scope.viewDetails = function(e) {
+        angular.element($('#detailCtrl')).scope().viewDetails(e);
+    }
+
     $scope.reset = function() {
+        $('#detailCtrl').hide();
+
         // Clear results
         $scope.simple_works = [];
         $scope.index_works = [];
@@ -107,6 +113,28 @@ app.controller('ResultCtrl', ['$scope', '$http', '$q', function($scope, $http, $
         $scope.$apply();
     }
 
+}]);
+
+
+app.controller('DetailCtrl', ['$scope', function($scope) {
+
+    $scope.enriched = true;
+    $scope.work_detail = {};
+
+    $scope.goBack = function() {
+        $('#detailCtrl').hide();
+        $('#results').show();
+        $('#searchForm').show();
+        $scope.work_detail = {};
+    }
+
+    $scope.viewDetails = function(e) {
+        console.log(e);
+        $('#searchForm').hide();
+        $('#results').hide();
+        $('#detailCtrl').show();
+        $scope.work_detail = e;
+    }
 }]);
 
 /**
