@@ -178,7 +178,7 @@ class QueryController extends \Controller
                         }
 
                         // Add the artist to the work
-                        $work['artist'] = $artist;
+                        $work['artist'] = array($artist);
 
                         array_push($results['results'][$workPid], $work);
 
@@ -347,7 +347,7 @@ class QueryController extends \Controller
                 foreach ($worksCursor as $work) {
 
                     // Add the artist to the work
-                    $work['artist'] = $artist;
+                    $work['artist'] = array($artist);
 
                     array_push($results, $work);
                 }
@@ -425,7 +425,7 @@ class QueryController extends \Controller
                 foreach ($worksCursor as $work) {
 
                     // Add the artist to the work
-                    $work['artist'] = $artist;
+                    $work['artist'] = array($artist);
                     array_push($results, $work);
                 }
             }

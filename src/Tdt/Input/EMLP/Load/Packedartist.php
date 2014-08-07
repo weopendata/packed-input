@@ -62,7 +62,14 @@ class Packedartist extends ALoader
             }
         }
 
-        $result = $artist->save();
+        try {
+            $result = $artist->save();
+        } catch (\Exception $ex) {
+
+            $this->log('An error occured while saving the data into the NoSQL: ' . $ex->getMessage());
+
+            $result = false;
+        }
 
         if ($result) {
             $this->log('Successfully loaded the data into the NoSQL.');

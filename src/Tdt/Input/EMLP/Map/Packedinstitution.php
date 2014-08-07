@@ -77,7 +77,7 @@ class Packedinstitution extends AMapper
             // Sometimes the value is a single value (small remark this date notation is nowhere near ISO 8601?)
             $range = explode('/', $chunk['dateIso8601'][0]);
 
-            if (count($range) == 2) {
+            if (count($range) == 2 && $range[0] < $range[1] && is_numeric($range[0]) && is_numeric($range[1])) {
 
                 $dateRange = array();
 
@@ -106,7 +106,7 @@ class Packedinstitution extends AMapper
     {
         if (!empty($chunk['custodianWikidataPid'])) {
 
-            $chunk['Wikidata'] = array();
+            $chunk['Wikidata'] = array('website' => '', 'geo' => '');
 
             $wikiUri = $chunk['custodianWikidataPid'];
 
@@ -127,23 +127,39 @@ class Packedinstitution extends AMapper
             // Fetch the geo coordinates
             $geoCoordinates = $crawler->filter('div[id="P625"]');
 
-            preg_match('/\s*(\d{1}.*)\s*\[edit\].*/', $geoCoordinates->text(), $matches);
+            try {
 
-            $geoCoordinates = @$matches[1];
+                preg_match('/\s*(\d{1}.*)\s*\[edit\].*/', $geoCoordinates->text(), $matches);
 
-            if (!empty($geoCoordinates)) {
-                $chunk['Wikidata']['geo'] = $geoCoordinates;
+                $geoCoordinates = @$matches[1];
+
+                if (!empty($geoCoordinates)) {
+                    $this->log('Geo coordinates found from the wikidata page.');
+
+                    $chunk['Wikidata']['geo'] = $geoCoordinates;
+                }
+
+            } catch (\InvalidArgumentException $ex) {
+                $this->log('No coordinates found from the wikidata page.');
             }
 
             // Fetch the official website
             $website = $crawler->filter('div[id="P856"]');
 
-            preg_match('/\s*(http:\/\/.+)\s*.*/', $website->text(), $matches);
+            try {
 
-            $website = @$matches[1];
+                preg_match('/\s*(http:\/\/.+)\s*.*/', $website->text(), $matches);
 
-            if (!empty($website)) {
-                $chunk['Wikidata']['website'] = $website;
+                $website = @$matches[1];
+
+                if (!empty($website)) {
+                    $this->log('Website found from the wikidata page.');
+
+                    $chunk['Wikidata']['website'] = $website;
+                }
+
+            } catch (\InvalidArgumentException $ex) {
+                $this->log('No coordinates found from the wikidata page.');
             }
 
         } else {
