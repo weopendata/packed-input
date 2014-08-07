@@ -86,6 +86,8 @@ class Packedinstitution extends AMapper
                 }
 
                 $chunk['dateIso8601Range'] = $dateRange;
+            } else {
+                $chunk['dateIso8601Range'] = array(@$range[0]);
             }
 
         }

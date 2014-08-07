@@ -541,9 +541,15 @@ class QueryController extends \Controller
         $parameters = array('objectDetail', 'objectName', 'startDate', 'endDate');
 
         // Check if dates have to search in a enriched way or not
-        $enriched = \Input::get('enriched', false);
+        $type = \Input::get('type', 'normalised');
 
-        $enriched = filter_var($enriched, FILTER_VALIDATE_BOOLEAN);
+        // Do we need a simple look up or not
+        $simple = true;
+
+        if ($type == 'normalised' || $type == 'index') {
+            $simple = false;
+        }
+
 
         $filterParameters = array();
 
@@ -611,14 +617,16 @@ class QueryController extends \Controller
                 $endDate = 3000;
             }
 
-            if ($enriched) {
+            if (!$simple) {
 
                 $clause = array(
                     'dateIso8601Range' => array(
-                        '$gte' => (int) $startDate,
-                        '$lte' => (int) $endDate,
+                        '$in' => array(
+                            (int) $startDate,
+                            (int) $endDate
                         )
-                    );
+                    )
+                );
 
                 array_push($and, $clause);
             } else {

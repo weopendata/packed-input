@@ -127,7 +127,7 @@ class Packedartist extends AMapper
         $chunk['uniqueNameVariants'] = $nameVariants;
 
         // Count the amount of URI's it has
-        $matches = array('creatorViafId', 'creatorWikidataPid', 'creatorRkdPid', 'creatorOdisPid');
+        $matches = array('creatorViafPid', 'creatorWikidataPid', 'creatorRkdPid', 'creatorOdisPid');
 
         $matchCount = 0;
 
@@ -151,7 +151,7 @@ class Packedartist extends AMapper
      */
     private function enrichWithViaf($chunk)
     {
-        if (!empty($chunk['creatorViafId'])) {
+        if (!empty($chunk['creatorViafPid'])) {
 
             // Initalise the VIAF array
             $chunk['VIAF'] = array(
@@ -162,7 +162,7 @@ class Packedartist extends AMapper
                                 'uniqueNameVariants' => array(),
                             );
 
-            foreach ($chunk['creatorViafId'] as $link) {
+            foreach ($chunk['creatorViafPid'] as $link) {
 
                 try {
 
@@ -274,7 +274,7 @@ class Packedartist extends AMapper
 
             $chunk['VIAF'] = array();
 
-            $this->log("No creatorViafId column was found in the data, returning data without VIAF enrichment.");
+            $this->log("No creatorViafPid column was found in the data, returning data without VIAF enrichment.");
         }
 
         return $chunk;
