@@ -546,7 +546,7 @@ class QueryController extends \Controller
         // Do we need a simple look up or not
         $simple = true;
 
-        if ($type == 'normalised' || $type == 'index') {
+        if ($type == 'normalised') {
             $simple = false;
         }
 
