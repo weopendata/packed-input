@@ -1,5 +1,6 @@
 var app = angular.module('PIDdemonstrator', []);
 
+$('#detailCtrl').hide();
 
 app.controller('ResultCtrl', ['$scope', '$http', '$q', function($scope, $http, $q) {
 
