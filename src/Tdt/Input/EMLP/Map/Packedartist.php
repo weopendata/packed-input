@@ -585,6 +585,7 @@ class Packedartist extends AMapper
                     '
                 );
 
+
                 // Parse the data from the siblings of the dt nodes
                 $bioData = $bio->each(function ($node) {
 
@@ -599,7 +600,22 @@ class Packedartist extends AMapper
 
                             if (!empty($bioText)) {
 
-                                preg_match('/.*\/(\d{4}-\d{2}-\d{2}).*/', $bioText, $matches);
+                                $matches = array();
+
+
+
+                                // The dates are of different sorts (yyyy-mm-dd)
+                                preg_match('/.*(\d{4}-\d{2}-\d{2}).*/', $bioText, $matches);
+
+                                // yyyy/yyyy
+                                if (empty($matches)) {
+                                    preg_match('/.*(\d{4}\/\d{4}).*/', $bioText, $matches);
+                                }
+
+                                // yyyy
+                                if (empty($matches)) {
+                                    preg_match('/.*(\d{4}).*/', $bioText, $matches);
+                                }
 
                                 $bioData['dateOfBirth'] = @$matches[1];
                             }
@@ -612,7 +628,20 @@ class Packedartist extends AMapper
 
                             if (!empty($bioText)) {
 
-                                preg_match('/.*\/(\d{4}-\d{2}-\d{2}).*/', $bioText, $matches);
+                                $matches = array();
+
+                                // The dates are of different sorts (yyyy-mm-dd)
+                                preg_match('/.*(\d{4}-\d{2}-\d{2}).*/', $bioText, $matches);
+
+                                // yyyy/yyyy
+                                if (empty($matches)) {
+                                    preg_match('/.*(\d{4}\/\d{4}).*/', $bioText, $matches);
+                                }
+
+                                // yyyy
+                                if (empty($matches)) {
+                                    preg_match('/.*(\d{4}).*/', $bioText, $matches);
+                                }
 
                                 $bioData['dateOfDeath'] = @$matches[1];
                             }
