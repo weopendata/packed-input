@@ -24,7 +24,7 @@
         @include('input::work_detail')
     </body>
     <script>
-        var baseURL = '/api/';
+        var baseURL = '{{ URL::to('api') }}/';
     </script>
     <script src="{{ URL::to("packages/packed-input/js/script.min.js") }}"></script>
 </html>
