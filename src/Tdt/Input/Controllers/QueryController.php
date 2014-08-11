@@ -261,10 +261,10 @@ class QueryController extends \Controller
 
                     if (empty($results['results'][$workPid])) {
                         $results['results'][$workPid] = array();
+                        $results['count']++;
                     }
 
                     array_push($results['results'][$workPid], $work);
-                    $results['count']++;
                 }
             } else {
                 if (empty($results['results']['-'])) {

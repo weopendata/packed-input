@@ -49,6 +49,26 @@
                                     <td>Objectnaam</td>
                                     <td>
                                         @{{ work_detail.objectName[0] }}
+                                        <ul ng:if='enriched && work_detail.objects[0]'>
+                                            <li ng:if='work_detail.objects[0].objectNameAatPid[0]'>AAT PID: @{{ work_detail.objects[0].objectNameAatPid[0] }}<br/></li>
+                                            <li ng:if='work_detail.objects[0].AAT.note[0]'>
+                                                @{{ work_detail.objects[0].AAT.note[0] }}
+                                            </li>
+                                            <li ng:if='work_detail.objects[0].AAT.preferredNames.de[0] || work_detail.objects[0].AAT.preferredNames.en[0] || work_detail.objects[0].AAT.preferredNames.fr[0] || work_detail.objects[0].AAT.preferredNames.nl[0]'>
+                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.nl[0]'>
+                                                    nl: @{{ work_detail.objects[0].AAT.preferredNames.nl[0] }} <br/>
+                                                </span>
+                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.en[0]'>
+                                                    en: @{{ work_detail.objects[0].AAT.preferredNames.en[0] }} <br/>
+                                                </span>
+                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.fr[0]'>
+                                                    fr: @{{ work_detail.objects[0].AAT.preferredNames.fr[0] }} <br/>
+                                                </span>
+                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.de[0]'>
+                                                    de: @{{ work_detail.objects[0].AAT.preferredNames.de[0] }}
+                                                </span>
+                                            </li>
+                                        </ul>
                                     </td>
                                 </tr>
                                 <tr>
@@ -81,6 +101,17 @@
                                                 Wikidata: @{{ work_detail.artists[0].creatorWikidataPid[0] }}
                                             </li>
                                         </ul>
+                                    </td>
+                                </tr>
+                                <tr ng:if='enriched && work_detail.artists[0].VIAF'>
+                                    <td>Artist VIAF</td>
+                                    <td>
+                                        <span ng:if='work_detail.artists[0].VIAF.dateOfBirth[0] || work_detail.artists[0].VIAF.placeOfBirth[0]'>
+                                            ° @{{ work_detail.artists[0].VIAF.dateOfBirth[0] }}<br/>
+                                        </span>
+                                        <span ng:if='work_detail.artists[0].VIAF.dateOfDeath[0] || work_detail.artists[0].VIAF.placeOfDeath[0]'>
+                                            &#8224; @{{ work_detail.artists[0].VIAF.dateOfDeath[0] }}
+                                        </span>
                                     </td>
                                 </tr>
                                 <tr ng:if='enriched && work_detail.artists[0].RKD'>
