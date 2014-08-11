@@ -117,7 +117,7 @@
                         </table>
                     </div>
                     <div class="large-4 columns text-right">
-                        <img ng:if='work_detail.representationUrl && enriched' src='@{{ work_detail.representationUrl }}' />
+                        <img ng:if='work_detail.representationUrl && enriched' ng:src='@{{ work_detail.representationUrl }}' />
                     </div>
                 </div>
                 <hr/>
