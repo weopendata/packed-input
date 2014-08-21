@@ -10,18 +10,21 @@ $('input[data-autocomplete]').each(function(){
             localQueryObject.index = (queryObj.index == 'false')? 'false' : 'true';
             localQueryObject[property] = request.term;
 
-            // Cache
-            var term = property + request.term + localQueryObject.index;
-            if (term in cache) {
-              response(cache[term]);
-              return;
-            }
+            // Check autocomplete option
+            if($('#autocomplete_enabled').is(':checked')){
+                // Cache
+                var term = property + request.term + localQueryObject.index;
+                if (term in cache) {
+                  response(cache[term]);
+                  return;
+                }
 
-            // Fetch results
-            $.getJSON( baseURL + "suggest?", localQueryObject, function( data, status, xhr ) {
-                cache[term] = data;
-                response(data);
-            });
+                // Fetch results
+                $.getJSON( baseURL + "suggest?", localQueryObject, function( data, status, xhr ) {
+                    cache[term] = data;
+                    response(data);
+                });
+            }
         },
 
         // Force pick a value

@@ -5,7 +5,7 @@
 
     <div ng:if='normalised_works'>
         <p>
-            <kbd>@{{ normalised_works.count | resultCount }}</kbd>
+            <kbd>@{{ normalised_works.count | workCount }}</kbd>
         </p>
 
         <div ng:repeat='pid in normalised_works.results'>

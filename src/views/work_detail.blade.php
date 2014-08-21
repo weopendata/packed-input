@@ -19,19 +19,19 @@
 
                 <div class="row">
                     <div class="large-8 columns">
-                        <h3>@{{ work_detail.title[0] }} <small>@{{ work_detail.creator[0] }}</small></h3>
+                        <h3>@{{ work_detail.title[0] }}</h3>
                         <p ng:if='enriched'>@{{ work_detail.workPid[0] }}</p>
                     </div>
                     <div class="large-4 columns text-right">
                         <ul class="button-group inline" ng:if='enriched'>
                             <li ng:if='work_detail.workPid[0]'>
-                                <a href="@{{ work_detail.workPid[0] }}" class="tiny button">Work Pid</a>
+                                <a href="@{{ work_detail.workPid[0] }}" class="tiny button" target='_blank' ng:tooltip title='@{{ work_detail.workPid[0] }}'>Work</a>
                             </li>
                             <li ng:if='work_detail.dataPid '>
-                                <a href="@{{ work_detail.dataPid }}" class="tiny button">Data Pid</a>
+                                <a href="@{{ work_detail.dataPid }}" class="tiny button" target='_blank' ng:tooltip title='@{{ work_detail.dataPid }}'>Data</a>
                             </li>
                             <li ng:if='work_detail.representationPid '>
-                                <a href="@{{ work_detail.representationPid }}" class="tiny button">Representatie</a>
+                                <a href="@{{ work_detail.representationPid }}" class="tiny button" target='_blank' ng:tooltip title='@{{ work_detail.representationPid }}'>Representation</a>
                             </li>
                         </ul>
                     </div>
@@ -42,7 +42,7 @@
                          <table>
                             <tbody>
                                 <tr>
-                                    <td>ID</td>
+                                    <td>Object nummer</td>
                                     <td>@{{ work_detail.objectNumber }}</td>
                                 </tr>
                                 <tr>
@@ -72,82 +72,85 @@
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Date</td>
+                                    <td>Datering</td>
                                     <td>
                                         @{{ work_detail.date }}
-                                    </td>
-                                </tr>
-                                <tr ng:if='enriched'>
-                                    <td>Date ISO8601</td>
-                                    <td>
-                                        @{{ work_detail.dateIso8601[0] }}
+                                        <div ng:if='enriched && work_detail.dateIso8601[0]'>ISO8601: @{{ work_detail.dateIso8601[0] }}</div>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td>Provider</td>
+                                    <td>Data uitgever</td>
                                     <td>@{{ work_detail.dataprovider }}</td>
                                 </tr>
-                                <tr ng:if='enriched && work_detail.artists[0]'>
-                                    <td>Artist</td>
+                                <tr>
+                                    <td>Vervaardiger</td>
+                                    <td>
+                                        @{{ work_detail.creator[0] }}
+                                        <ul ng:if='enriched && work_detail.artists[0]'>
+                                            <li ng:if='work_detail.artists[0].creatorRkdPid[0]'>
+                                                Rkd: @{{ work_detail.artists[0].creatorRkdPid[0] }}<br/>
+                                                <span ng:if='work_detail.artists[0].RKD.dateOfBirth[0] || work_detail.artists[0].RKD.placeOfBirth[0]'>
+                                                    ° @{{ work_detail.artists[0].RKD.dateOfBirth[0] }} @{{ work_detail.artists[0].RKD.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
+                                                </span>
+                                                <span ng:if='work_detail.artists[0].RKD.dateOfDeath[0] || work_detail.artists[0].RKD.placeOfDeath[0]'>
+                                                    &#8224; @{{ work_detail.artists[0].RKD.dateOfDeath[0] }} @{{ work_detail.artists[0].RKD.placeOfDeath[0] }}
+                                                </span>
+                                            </li>
+                                            <li ng:if='work_detail.artists[0].creatorViafPid[0]'>
+                                                Viaf: @{{ work_detail.artists[0].creatorViafPid[0] }}<br/>
+                                                <span ng:if='work_detail.artists[0].VIAF.dateOfBirth[0] || work_detail.artists[0].VIAF.placeOfBirth[0]'>
+                                                    ° @{{ work_detail.artists[0].VIAF.dateOfBirth[0] }} @{{ work_detail.artists[0].VIAF.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
+                                                </span>
+                                                <span ng:if='work_detail.artists[0].VIAF.dateOfDeath[0] || work_detail.artists[0].VIAF.placeOfDeath[0]'>
+                                                    &#8224; @{{ work_detail.artists[0].VIAF.dateOfDeath[0] }} @{{ work_detail.artists[0].VIAF.placeOfDeath[0] }}
+                                                </span>
+                                            </li>
+                                            <li ng:if='work_detail.artists[0].creatorWikidataPid[0]'>
+                                                Wikidata: @{{ work_detail.artists[0].creatorWikidataPid[0] }}<br/>
+                                                <span ng:if='work_detail.artists[0].Wikidata.dateOfBirth[0] || work_detail.artists[0].Wikidata.placeOfBirth[0]'>
+                                                    ° @{{ work_detail.artists[0].Wikidata.dateOfBirth[0] }} @{{ work_detail.artists[0].Wikidata.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
+                                                </span>
+                                                <span ng:if='work_detail.artists[0].Wikidata.dateOfDeath[0] || work_detail.artists[0].Wikidata.placeOfDeath[0]'>
+                                                    &#8224; @{{ work_detail.artists[0].Wikidata.dateOfDeath[0] }} @{{ work_detail.artists[0].Wikidata.placeOfDeath[0] }}
+                                                </span>
+                                            </li>
+                                            <li ng:if='work_detail.artists[0].creatorOdisPid[0]'>
+                                                Odis: @{{ work_detail.artists[0].creatorOdisPid[0] }}
+                                            </li>
+                                        </ul>
+
+                                        <div ng:if='enriched && work_detail.artists[0].uniqueNameVariants[0]'>
+                                            <br/>
+                                            @{{ work_detail.artists[0].uniqueNameVariants.join('; ') }}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr ng:if='enriched && work_detail.artists[0].RKD.literature[0]'>
+                                    <td>Literatuurlijst</td>
                                     <td>
                                         <ul>
-                                            <li ng:if='work_detail.artists[0].creatorRkdPid'>
-                                                Rkd: @{{ work_detail.artists[0].creatorRkdPid[0] }}
-                                            </li>
-                                            <li ng:if='work_detail.artists[0].creatorViafPid'>
-                                                Viaf: @{{ work_detail.artists[0].creatorViafPid[0] }}
-                                            </li>
-                                            <li ng:if='work_detail.artists[0].creatorWikidataPid'>
-                                                Wikidata: @{{ work_detail.artists[0].creatorWikidataPid[0] }}
+                                            <li ng:repeat='book in work_detail.artists[0].RKD.literature'>
+                                                @{{ book }}
                                             </li>
                                         </ul>
                                     </td>
                                 </tr>
-                                <tr ng:if='enriched && work_detail.artists[0].VIAF'>
-                                    <td>Artist VIAF</td>
-                                    <td>
-                                        <span ng:if='work_detail.artists[0].VIAF.dateOfBirth[0] || work_detail.artists[0].VIAF.placeOfBirth[0]'>
-                                            ° @{{ work_detail.artists[0].VIAF.dateOfBirth[0] }}<br/>
-                                        </span>
-                                        <span ng:if='work_detail.artists[0].VIAF.dateOfDeath[0] || work_detail.artists[0].VIAF.placeOfDeath[0]'>
-                                            &#8224; @{{ work_detail.artists[0].VIAF.dateOfDeath[0] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr ng:if='enriched && work_detail.artists[0].RKD'>
-                                    <td>Artist RKD</td>
-                                    <td>
-                                        <span ng:if='work_detail.artists[0].RKD.dateOfBirth[0] || work_detail.artists[0].RKD.placeOfBirth[0]'>
-                                            ° @{{ work_detail.artists[0].RKD.dateOfBirth[0] }} @{{ work_detail.artists[0].RKD.placeOfBirth[0] }} <br/>
-                                        </span>
-                                        <span ng:if='work_detail.artists[0].RKD.dateOfDeath[0] || work_detail.artists[0].RKD.placeOfDeath[0]'>
-                                            &#8224; @{{ work_detail.artists[0].RKD.dateOfDeath[0] }} @{{ work_detail.artists[0].RKD.placeOfDeath[0] }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr ng:if='enriched && work_detail.artists[0].uniqueNameVariants[0]'>
-                                    <td>Artist alternative names</td>
-                                    <td>@{{ work_detail.artists[0].uniqueNameVariants.join('; ') }}</td>
-                                </tr>
                                 <tr>
-                                    <td>Custodian</td>
+                                    <td>Bewaarinstelling</td>
                                     <td>
                                         @{{ work_detail.custodian }}<br/>
                                         <span ng:if='enriched'>
-                                            <a href='@{{ work_detail.custodianWikidataPid }}'>Wikidata</a>&nbsp;&nbsp;&nbsp;&nbsp;
-                                            <a href='@{{ work_detail.Wikidata.website }}' ng:if='work_detail.Wikidata.website'>Site</a><br/>
+                                            Wiki: <a href='@{{ work_detail.custodianWikidataPid }}' target='_blank'>@{{ work_detail.custodianWikidataPid }}</a><br/>
+                                            ISIL: <a href='@{{ work_detail.custodianIsilPid }}' target='_blank'>@{{ work_detail.custodianIsilPid }}</a><br/>
+                                            Site: <a href='@{{ work_detail.Wikidata.website }}' target='_blank' ng:if='work_detail.Wikidata.website'>@{{ work_detail.Wikidata.website }}</a><br/>
                                             @{{ work_detail.Wikidata.geo }}
                                         </span>
                                     </td>
                                 </tr>
-                                <tr ng:if='enriched'>
-                                    <td>Custodian Pid</td>
-                                    <td>@{{ work_detail.custodianIsilPid }}</td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div class="large-4 columns text-right">
+                    <div class="large-4 columns text-right image-container">
                         <img ng:if='work_detail.representationUrl && enriched' ng:src='@{{ work_detail.representationUrl }}' />
                     </div>
                 </div>

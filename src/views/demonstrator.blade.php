@@ -8,8 +8,6 @@
             <fieldset>
                 <legend>Zoeken</legend>
 
-                <p>Geef mij alle beschrijvingen van de werken met:</p>
-
                 <div class="row parent">
                     <div class="small-4 columns">
                         <div class="form-enabler-switch switch tiny left inline">
@@ -99,6 +97,23 @@
                             Zoek
                         </button>
                         <span class='note' id='searchStatus'></span>
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="small-6 large-4 columns">
+            <fieldset>
+                <legend>Opties</legend>
+
+                <div class="row">
+                    <div class="small-4 columns">
+                        <label for="autocomplete_enabled" class="right inline">Autocomplete</label>
+                    </div>
+                    <div class="small-8 columns">
+                        <div class="switch tiny round left inline">
+                            <input id="autocomplete_enabled" type="checkbox" checked>
+                            <label for="autocomplete_enabled"></label>
+                        </div>
                     </div>
                 </div>
             </fieldset>

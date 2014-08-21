@@ -135,6 +135,9 @@ app.controller('DetailCtrl', ['$scope', function($scope) {
         $('#results').hide();
         $('#detailCtrl').show();
         $scope.work_detail = e;
+
+        // Push state
+        history.pushState({}, 'PID demonstrator', '?' + $.param(queryObj));
     }
 }]);
 
@@ -143,7 +146,23 @@ app.controller('DetailCtrl', ['$scope', function($scope) {
  */
 app.filter('resultCount', function() {
     return function(count) {
+        if(count == 0 || count == undefined){
+            status = 'Geen records';
+        }else if(count == 1){
+            status = '1 record';
+        }else{
+            status = count + ' records';
+        }
 
+        return status + ' gevonden';
+    };
+});
+
+/**
+ * Result count filter
+ */
+app.filter('workCount', function() {
+    return function(count) {
         if(count == 0 || count == undefined){
             status = 'Geen werken';
         }else if(count == 1){
@@ -155,3 +174,55 @@ app.filter('resultCount', function() {
         return status + ' gevonden';
     };
 });
+
+
+/**
+ * Tooltips
+ */
+app.directive('ngTooltip', function() {
+    return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+            var my = attrs.my || 'top center'
+            , at = attrs.at || 'bottom center'
+            , qtipClass = attrs.class || 'qtip-dark'
+            , content
+
+            if (attrs.title) {
+                content = attrs.title
+            }
+            else {
+                content = attrs.content
+            }
+
+            $(element).qtip({
+                content: content,
+                position: {
+                    my: my,
+                    at: at,
+                    target: element
+                },
+                hide: {
+                    fixed : true,
+                    delay : 100
+                },
+                style: 'qtip-dark'
+            })
+        }
+    }
+});
+
+/**
+ * History detect
+ */
+$(window).bind('onPopState', function(){
+    console.log('j');
+})
+
+window.onpopstate = function(event) {
+    if(!$('#results').is(":visible")){
+        $('#detailCtrl').hide();
+        $('#results').show();
+        $('#searchForm').show();
+    }
+};

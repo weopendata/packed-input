@@ -3,6 +3,7 @@
 @import "autocomplete";
 @import "alertify";
 @import "font-awesome";
+@import "tooltip";
 
 $primary-color: #00e6ae;
 
@@ -106,5 +107,28 @@ fieldset{
 #detailCtrl{
     ul{
         margin-bottom: 0px;
+    }
+
+    .image-container{
+        position: relative;
+
+        img{
+            max-width: 100%;
+            width: 100%;
+        }
+    }
+
+    table{
+        td{
+            border-bottom: 1px solid #ededed;
+        }
+
+        a{
+            color: #333;
+
+            &:hover, &:focus{
+                color: #454545;
+            }
+        }
     }
 }
