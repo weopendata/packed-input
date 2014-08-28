@@ -18,22 +18,13 @@
                 </div>
 
                 <div class="row">
-                    <div class="large-8 columns">
+                    <div class="large-12 columns">
                         <h3>@{{ work_detail.title[0] }}</h3>
-                        <p ng:if='enriched'>@{{ work_detail.workPid[0] }}</p>
-                    </div>
-                    <div class="large-4 columns text-right">
-                        <ul class="button-group inline" ng:if='enriched'>
-                            <li ng:if='work_detail.workPid[0]'>
-                                <a href="@{{ work_detail.workPid[0] }}" class="tiny button" target='_blank' ng:tooltip title='@{{ work_detail.workPid[0] }}'>Work</a>
-                            </li>
-                            <li ng:if='work_detail.dataPid '>
-                                <a href="@{{ work_detail.dataPid }}" class="tiny button" target='_blank' ng:tooltip title='@{{ work_detail.dataPid }}'>Data</a>
-                            </li>
-                            <li ng:if='work_detail.representationPid '>
-                                <a href="@{{ work_detail.representationPid }}" class="tiny button" target='_blank' ng:tooltip title='@{{ work_detail.representationPid }}'>Representation</a>
-                            </li>
-                        </ul>
+                        <p ng:if='enriched'>
+                            [workPid] &ndash; <a href='@{{ work_detail.workPid[0] }}' target='_blank'>@{{ work_detail.workPid[0] }}</a><br/>
+                            [dataPid] &ndash; <a href='@{{ work_detail.dataPid }}' target='_blank'>@{{ work_detail.dataPid }}</a><br/>
+                            [representationPid] &ndash; <a href='@{{ work_detail.representationPid }}' target='_blank'>@{{ work_detail.representationPid }}</a>
+                        </p>
                     </div>
                 </div>
 
@@ -48,7 +39,7 @@
                                 <tr>
                                     <td>Objectnaam</td>
                                     <td>
-                                        @{{ work_detail.objectName[0] }}
+                                        @{{ work_detail.objectName.join('; ') }}
                                         <ul ng:if='enriched && work_detail.objects[0]'>
                                             <li ng:if='work_detail.objects[0].objectNameAatPid[0]'>AAT PID: @{{ work_detail.objects[0].objectNameAatPid[0] }}<br/></li>
                                             <li ng:if='work_detail.objects[0].AAT.note[0]'>

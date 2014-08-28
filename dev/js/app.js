@@ -175,43 +175,6 @@ app.filter('workCount', function() {
     };
 });
 
-
-/**
- * Tooltips
- */
-app.directive('ngTooltip', function() {
-    return {
-        restrict: 'A',
-        link: function(scope, element, attrs) {
-            var my = attrs.my || 'top center'
-            , at = attrs.at || 'bottom center'
-            , qtipClass = attrs.class || 'qtip-dark'
-            , content
-
-            if (attrs.title) {
-                content = attrs.title
-            }
-            else {
-                content = attrs.content
-            }
-
-            $(element).qtip({
-                content: content,
-                position: {
-                    my: my,
-                    at: at,
-                    target: element
-                },
-                hide: {
-                    fixed : true,
-                    delay : 100
-                },
-                style: 'qtip-dark'
-            })
-        }
-    }
-});
-
 /**
  * History detect
  */
