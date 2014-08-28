@@ -17,7 +17,7 @@
                         <label for="artist" class="right inline">Vervaardiger</label>
                     </div>
                     <div class="small-8 columns">
-                        <input type="text" id="artist" placeholder="Artiest" data-autocomplete='true' data-property='creator'>
+                        <input type="text" id="artist" placeholder="Vervaardiger" data-autocomplete='true' data-property='creator'>
                     </div>
                 </div>
                 <div class="row parent">

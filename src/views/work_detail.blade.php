@@ -74,7 +74,8 @@
                                 <tr>
                                     <td>Datering</td>
                                     <td>
-                                        @{{ work_detail.date }}
+                                        @{{ work_detail.dateStartPrecision[0] }} @{{ work_detail.dateStartValue[0] }}
+                                        <span ng:if='work_detail.dateEndValue[0]'>- @{{ work_detail.dateEndPrecision[0] }} @{{ work_detail.dateEndValue[0] }}</span>
                                         <div ng:if='enriched && work_detail.dateIso8601[0]'>ISO8601: @{{ work_detail.dateIso8601[0] }}</div>
                                     </td>
                                 </tr>
@@ -88,7 +89,7 @@
                                         @{{ work_detail.creator[0] }}
                                         <ul ng:if='enriched && work_detail.artists[0]'>
                                             <li ng:if='work_detail.artists[0].creatorRkdPid[0]'>
-                                                Rkd: @{{ work_detail.artists[0].creatorRkdPid[0] }}<br/>
+                                                Rkd: <a href="@{{ work_detail.artists[0].creatorRkdPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorRkdPid[0] }}</a><br/>
                                                 <span ng:if='work_detail.artists[0].RKD.dateOfBirth[0] || work_detail.artists[0].RKD.placeOfBirth[0]'>
                                                     ° @{{ work_detail.artists[0].RKD.dateOfBirth[0] }} @{{ work_detail.artists[0].RKD.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
                                                 </span>
@@ -97,7 +98,7 @@
                                                 </span>
                                             </li>
                                             <li ng:if='work_detail.artists[0].creatorViafPid[0]'>
-                                                Viaf: @{{ work_detail.artists[0].creatorViafPid[0] }}<br/>
+                                                Viaf: <a href="@{{ work_detail.artists[0].creatorViafPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorViafPid[0] }}</a><br/>
                                                 <span ng:if='work_detail.artists[0].VIAF.dateOfBirth[0] || work_detail.artists[0].VIAF.placeOfBirth[0]'>
                                                     ° @{{ work_detail.artists[0].VIAF.dateOfBirth[0] }} @{{ work_detail.artists[0].VIAF.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
                                                 </span>
@@ -106,7 +107,7 @@
                                                 </span>
                                             </li>
                                             <li ng:if='work_detail.artists[0].creatorWikidataPid[0]'>
-                                                Wikidata: @{{ work_detail.artists[0].creatorWikidataPid[0] }}<br/>
+                                                Wikidata: <a href="@{{ work_detail.artists[0].creatorWikidataPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorWikidataPid[0] }}</a><br/>
                                                 <span ng:if='work_detail.artists[0].Wikidata.dateOfBirth[0] || work_detail.artists[0].Wikidata.placeOfBirth[0]'>
                                                     ° @{{ work_detail.artists[0].Wikidata.dateOfBirth[0] }} @{{ work_detail.artists[0].Wikidata.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
                                                 </span>
@@ -115,7 +116,7 @@
                                                 </span>
                                             </li>
                                             <li ng:if='work_detail.artists[0].creatorOdisPid[0]'>
-                                                Odis: @{{ work_detail.artists[0].creatorOdisPid[0] }}
+                                                Odis: <a href="@{{ work_detail.artists[0].creatorOdisPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorOdisPid[0] }}</a>
                                             </li>
                                         </ul>
 

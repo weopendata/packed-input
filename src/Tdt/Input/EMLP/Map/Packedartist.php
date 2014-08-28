@@ -337,12 +337,9 @@ class Packedartist extends AMapper
 
                     try {
 
-                        $dateOfBirth = $dateOfBirth->text();
+                        $dateOfBirth = $dateOfBirth->filter('.wb-claim .wb-snak-value')->text();
 
-                        // Clean up the text element
-                        preg_match('/\s*(\d{2}\s[a-zA-Z]+\s\d{4})\s*/', $dateOfBirth, $matches);
-
-                        array_push($chunk['Wikidata']['dateOfBirth'], @$matches[1]);
+                        array_push($chunk['Wikidata']['dateOfBirth'], $dateOfBirth);
 
                     } catch (\InvalidArgumentException $ex) {
                         $this->log("No date of birth could be retrieved from the Wikidata website ($wikiURI).");
@@ -351,18 +348,15 @@ class Packedartist extends AMapper
 
                 // Add the place of birth
 
-                $placeOfBirth = $crawler->filter('div[id="P19"]');
+                $placeOfBirth = $crawler->filter('#P19');
 
                 if (!empty($placeOfBirth)) {
 
                     try {
 
-                        $placeOfBirth = $placeOfBirth->text();
+                        $placeOfBirth = $placeOfBirth->filter('.wb-claim .wb-snak-value a')->text();
 
-                        // Clean up the text element
-                        preg_match('/\s*(.*)\s*/', $placeOfBirth, $matches);
-
-                        array($chunk['Wikidata']['placeOfBirth'], @$matches[1]);
+                        array_push($chunk['Wikidata']['placeOfBirth'], $placeOfBirth);
 
                     } catch (\InvalidArgumentException $ex) {
                         $this->log("No place of birth could be retrieved from the Wikidata website ($wikiURI).");
@@ -376,13 +370,9 @@ class Packedartist extends AMapper
                 if (!empty($dateOfDeath)) {
 
                     try {
+                        $dateOfDeath = $dateOfDeath->filter('.wb-claim .wb-snak-value')->text();
 
-                        $dateOfDeath = $dateOfDeath->text();
-
-                        // Clean up the text element
-                        preg_match('/\s*(\d{2}\s[a-zA-Z]+\s\d{4})\s*/', $dateOfDeath, $matches);
-
-                        array_push($chunk['Wikidata']['dateOfDeath'], @$matches[1]);
+                        array_push($chunk['Wikidata']['dateOfDeath'], $dateOfDeath);
 
                     } catch (\InvalidArgumentException $ex) {
                         $this->log("No date of death could be retrieved from the Wikidata website ($wikiURI).");
@@ -391,18 +381,14 @@ class Packedartist extends AMapper
 
                 // Add the place of death
 
-                $placeOfDeath = $crawler->filter('div[id="P20"]');
+                $placeOfDeath = $crawler->filter('#P20');
 
                 if (!empty($placeOfDeath)) {
 
                     try {
+                        $placeOfDeath = $placeOfDeath->filter('.wb-claim .wb-snak-value a')->text();
 
-                        $placeOfDeath = $placeOfDeath->text();
-
-                        // Clean up the text element
-                        preg_match('/\s*(.*)\s*/', $placeOfDeath, $matches);
-
-                        array_push($chunk['Wikidata']['placeOfDeath'], @$matches[1]);
+                        array_push($chunk['Wikidata']['placeOfDeath'], $placeOfDeath);
 
                     } catch (\InvalidArgumentException $ex) {
                         $this->log("No place of death could be retrieved from the Wikidata website ($wikiURI).");
@@ -592,7 +578,8 @@ class Packedartist extends AMapper
                     $bioData = array();
 
                     try {
-                        if ($node->text() == 'Born') {
+                        if (strtolower($node->text()) == 'born' ||
+                            strtolower($node->text()) == 'geboren') {
 
                             $bioData['placeOfBirth'] = $node->siblings()->filter('dd')->filter('a')->text();
 
@@ -603,24 +590,24 @@ class Packedartist extends AMapper
                                 $matches = array();
 
 
-
                                 // The dates are of different sorts (yyyy-mm-dd)
-                                preg_match('/.*(\d{4}-\d{2}-\d{2}).*/', $bioText, $matches);
+                                preg_match('/(\d{4}-\d{2}-\d{2})/i', $bioText, $matches);
 
                                 // yyyy/yyyy
                                 if (empty($matches)) {
-                                    preg_match('/.*(\d{4}\/\d{4}).*/', $bioText, $matches);
+                                    preg_match('/(\d{4}\/\d{4})/i', $bioText, $matches);
                                 }
 
                                 // yyyy
                                 if (empty($matches)) {
-                                    preg_match('/.*(\d{4}).*/', $bioText, $matches);
+                                    preg_match('/(\d{4})/i', $bioText, $matches);
                                 }
 
                                 $bioData['dateOfBirth'] = @$matches[1];
                             }
 
-                        } else if ($node->text() == 'Deceased') {
+                        } else if (strtolower($node->text()) == 'deceased' ||
+                                    strtolower($node->text()) == 'overleden') {
 
                             $bioData['placeOfDeath'] = $node->siblings()->filter('dd')->filter('a')->text();
 
@@ -631,16 +618,16 @@ class Packedartist extends AMapper
                                 $matches = array();
 
                                 // The dates are of different sorts (yyyy-mm-dd)
-                                preg_match('/.*(\d{4}-\d{2}-\d{2}).*/', $bioText, $matches);
+                                preg_match('/(\d{4}-\d{2}-\d{2})/i', $bioText, $matches);
 
                                 // yyyy/yyyy
                                 if (empty($matches)) {
-                                    preg_match('/.*(\d{4}\/\d{4}).*/', $bioText, $matches);
+                                    preg_match('/(\d{4}\/\d{4})/i', $bioText, $matches);
                                 }
 
                                 // yyyy
                                 if (empty($matches)) {
-                                    preg_match('/.*(\d{4}).*/', $bioText, $matches);
+                                    preg_match('/(\d{4})/i', $bioText, $matches);
                                 }
 
                                 $bioData['dateOfDeath'] = @$matches[1];
