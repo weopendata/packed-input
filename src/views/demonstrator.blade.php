@@ -32,25 +32,28 @@
                         <input type="text" id="name" placeholder="Objectnaam" data-autocomplete='true' data-property='objectName'>
                     </div>
                 </div>
-                {{--
+
                 <div class="row parent">
                     <div class="small-4 columns">
                         <div class="form-enabler-switch switch tiny left inline">
-                            <input id="institute_enabled" type="checkbox">
-                            <label for="institute_enabled"></label>
+                            <input id="institution_enabled" type="checkbox">
+                            <label for="institution_enabled"></label>
                         </div>
-                        <label for="institute" class="right inline">Bewaarinstelling</label>
+                        <label for="institution" class="right inline">Bewaarinstelling</label>
                     </div>
                     <div class="small-8 columns">
-                        <select id="institute" class='large-6'>
-                            <option value="husker">Husker</option>
-                            <option value="starbuck">Starbuck</option>
-                            <option value="hotdog">Hot Dog</option>
-                            <option value="apollo">Apollo</option>
+                        <select id="institution" class='large-6'  data-property='institution'>
+                            <option value="Groeningemuseum">Groeningemuseum</option>
+                            <option value="Lukas">Lukas</option>
+                            <option value="MHKA">MHKA</option>
+                            <option value="SMAK">SMAK</option>
+                            <option value="VKC">VKC</option>
+                            <option value="CVG">CVG</option>
+                            <option value="Middelheimmuseum">Middelheimmuseum</option>
+                            <option value="MSKGent">MSKGent</option>
                         </select>
                     </div>
                 </div>
-                --}}
 
                 <div class="row parent">
                     <div class="small-4 columns">

@@ -538,7 +538,7 @@ class QueryController extends \Controller
      */
     private function buildWorksFilter()
     {
-        $parameters = array('objectDetail', 'objectName', 'startDate', 'endDate');
+        $parameters = array('objectDetail', 'objectName', 'startDate', 'endDate', 'institution');
 
         // Check if dates have to search in a enriched way or not
         $type = \Input::get('type', 'normalised');
@@ -564,6 +564,20 @@ class QueryController extends \Controller
 
         // Build the $and clause
         $and = array();
+
+         // Check for institution
+        if (!empty($filterParameters['institution'])) {
+
+            $clause = array(
+                'dataprovider' => array(
+                    '$regex' => '.*' . $filterParameters['institution'] . '.*',
+                    '$options' => 'i'
+                    )
+                );
+
+            array_push($and, $clause);
+        }
+
 
         // Check for objectDetail (objectNumber or title)
         if (!empty($filterParameters['objectDetail'])) {

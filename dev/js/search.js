@@ -25,7 +25,7 @@ function search(e){
     var localQueryObject = {};
     var validated = true;
     var minimumOne = false;
-    $('form input[data-property]:not(:disabled)').each(function(){
+    $('form input[data-property]:not(:disabled), form select[data-property]:not(:disabled)').each(function(){
         var value = $(this).val();
         localQueryObject[$(this).data('property')] = value;
 
