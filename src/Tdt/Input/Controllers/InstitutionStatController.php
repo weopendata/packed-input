@@ -33,7 +33,7 @@ class InstitutionStatController extends \Controller
      *
      * @return array
      */
-    public function handle($n = 1)
+    public function handle($n = 4)
     {
         $data = new \stdClass();
 

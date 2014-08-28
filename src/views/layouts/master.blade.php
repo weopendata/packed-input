@@ -13,8 +13,15 @@
 
     <body ng:app='PIDdemonstrator'>
         <div class="row header">
-            <div class="large-12 columns">
+            <div class="large-6 columns">
                 <img src='{{ URL::to("packages/packed-input/img/logo.png") }}' width="215" class=''/>
+            </div>
+            <div class="large-6 columns text-right">
+                Statistics:
+                <a href="/api/stats/artists" class="tiny button">Artists</a>
+                <a href="/api/stats/objects" class="tiny button">Objects</a>
+                <a href="/api/stats/works" class="tiny button">Works</a>
+                <a href="/api/stats/normalisedworks" class="tiny button">Normalised works</a>
             </div>
         </div>
 

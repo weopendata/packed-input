@@ -21,10 +21,9 @@ Route::get('api/stats/objects/{data_provider?}', 'Tdt\Input\Controllers\ObjectSt
 Route::get('api/stats/works/{n}', 'Tdt\Input\Controllers\InstitutionStatController@handle')
 
 ->where('n', '[2-9]+');
+Route::get('api/stats/works', 'Tdt\Input\Controllers\InstitutionStatController@handle');
 
-Route::get('api/stats/normalizedworks', 'Tdt\Input\Controllers\InstitutionStatController@normalized')
-
-->where('n', '[2-9]+');
+Route::get('api/stats/normalisedworks', 'Tdt\Input\Controllers\InstitutionStatController@normalized');
 
 Route::get('api/query', 'Tdt\Input\Controllers\QueryController@handle');
 
