@@ -19,9 +19,9 @@
             <div class="large-6 columns text-right">
                 Statistics:&nbsp;&nbsp;
                 <a href="/api/stats/artists" class="tiny">Artists</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-                <a href="/api/stats/objects" class="tiny">Objects</a>&nbsp;&nbsp;|&nbsp;&nbsp;
+                <a href="/api/stats/objects" class="tiny">Objectnames</a>&nbsp;&nbsp;|&nbsp;&nbsp;
                 <a href="/api/stats/works" class="tiny">Works</a>&nbsp;&nbsp;|&nbsp;&nbsp;
-                <a href="/api/stats/normalisedworks" class="tiny">Normalised works</a>
+                <a href="/api/stats/normalisedworks" class="tiny">Dates</a>
             </div>
         </div>
 

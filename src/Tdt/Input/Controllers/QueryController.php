@@ -207,7 +207,7 @@ class QueryController extends \Controller
         $filter = array('$and' => $this->buildWorksFilter());
 
         // Get the objects with the build up filter
-        $works = $this->getCollection('institutions');
+        $worksCol = $this->getCollection('institutions');
         $objects = $this->getCollection('objects');
         $artists = $this->getCollection('artists');
 
@@ -221,14 +221,44 @@ class QueryController extends \Controller
         $filter = $this->addInstituteToFilter($filter);
 
         // Find the works matching the filter
-        $worksCursor = $works->find($filter, $properties)->skip($offset)->limit($limit);
+        $worksCursor = $worksCol->find($filter, $properties)->skip($offset)->limit($limit);
+
+        $works = array();
+        // Match on equal workPid's
+        $PidtoSearch = array();
+        $DbNumberToIgnore = array();
+
+        foreach ($worksCursor as $work) {
+            array_push($works, $work);
+
+            if (!empty($work['workPid'][0]) && !in_array($work['workPid'][0], $PidtoSearch)) {
+                // Push in Pid's to search
+                array_push($PidtoSearch, $work['workPid'][0]);
+            }
+
+            if (!empty($work['databaseNumber']) && !in_array($work['databaseNumber'], $DbNumberToIgnore)) {
+                array_push($DbNumberToIgnore, $work['databaseNumber']);
+            }
+        }
+
+        // Query for other with same workPid
+        $filter = array('$and' => array(
+                array('workPid' => array('$in' => $PidtoSearch)),
+                array('databaseNumber' => array('$nin' => $DbNumberToIgnore))
+            ));
+
+        // Find the works matching the filter
+        $worksCursor = $worksCol->find($filter, $properties);
+
+        foreach ($worksCursor as $work) {
+            array_push($works, $work);
+        }
 
         // Prepare the results array
         $results['count'] = 0;
         $results['results'] = array();
 
-
-        foreach ($worksCursor as $work) {
+        foreach ($works as $work) {
 
             if (!empty($work['objectNameId'])) {
 
@@ -806,57 +836,56 @@ class QueryController extends \Controller
             } else {
 
                 $query = array(
-                    '$or' => array(
-                        array(
-                            'objectNumber' => array(
-                                '$regex' => '.*' . $searchVal . '.*',
-                                '$options' => 'i'
-                                )
-                            ),
-                        array(
-                            'title' => array(
-                                '$regex' => '.*' . $searchVal . '.*',
-                                '$options' => 'i'
-                                )
+                        'title' => array(
+                            '$regex' => '.*' . $searchVal . '.*',
+                            '$options' => 'i'
                             )
-                        )
-                    );
-
-                $query = $this->addInstituteToFilter($query);
+                        );
 
                 // Make the query and only retrieve the field that matches the search key
                 $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
 
-                if (!$cursor->hasNext()) {
-                    return Response::json(array());
-                }
-
                 $results = array();
 
-                foreach ($cursor as $result) {
-                    if (is_array($result['title'])) {
-
-                        foreach ($result['title'] as $val) {
-                            if (!in_array($val, $results)) {
-                                array_push($results, $val);
+                if ($cursor->hasNext()) {
+                    foreach ($cursor as $result) {
+                        if (is_array($result['title'])) {
+                            foreach ($result['title'] as $val) {
+                                if (!in_array($val, $results)) {
+                                    array_push($results, $val);
+                                }
                             }
-                        }
-                    } else {
-                        if (!in_array($result['title'], $results)) {
-                            array_push($results, $result['title']);
+                        } else {
+                            if (!in_array($result['title'], $results)) {
+                                array_push($results, $result['title']);
+                            }
                         }
                     }
+                }
 
-                    if (is_array($result['objectNumber'])) {
 
-                        foreach ($result['objectNumber'] as $val) {
-                            if (!in_array($val, $results)) {
-                                array_push($results, $val);
+                $query = array(
+                            'objectNumber' => array(
+                                '$regex' => '.*' . $searchVal . '.*',
+                                '$options' => 'i'
+                                )
+                        );
+
+                // Make the query and only retrieve the field that matches the search key
+                $cursor = $works->find($query)->limit(self::$SUGGEST_PAGE_SIZE);
+
+                if ($cursor->hasNext()) {
+                    foreach ($cursor as $result) {
+                        if (is_array($result['objectNumber'])) {
+                            foreach ($result['objectNumber'] as $val) {
+                                if (!in_array($val, $results)) {
+                                    array_push($results, $val);
+                                }
                             }
-                        }
-                    } else {
-                        if (!in_array($result['objectNumber'], $results)) {
-                            array_push($results, $result['objectNumber']);
+                        } else {
+                            if (!in_array($result['objectNumber'], $results)) {
+                                array_push($results, $result['objectNumber']);
+                            }
                         }
                     }
                 }
