@@ -124,10 +124,10 @@ class InstitutionStatController extends \Controller
                 $key = $normalizedKeys[$i];
 
                 $data->normalizedYear = trim($key);
-                $data->normHeader = trim($normalizedResults[$key]);
+                $data->$normHeader = trim($normalizedResults[$key]);
             } else {
                 $data->normalizedYear = '';
-                $data->normHeader = '';
+                $data->$normHeader = '';
             }
 
             if (!empty($nonNormalizedKeys[$i]) || is_numeric(@$nonNormalizedKeys[$i])) {
@@ -135,10 +135,10 @@ class InstitutionStatController extends \Controller
                 $key = $nonNormalizedKeys[$i];
 
                 $data->nonNormalizedYear = trim($key);
-                $data->nonNormHeader = trim($nonNormalizedResults[$key]);
+                $data->$nonNormHeader = trim($nonNormalizedResults[$key]);
             } else {
                 $data->nonNormalizedYear = '';
-                $data->nonNormHeader = '';
+                $data->$nonNormHeader = '';
             }
 
             array_push($dataResult, $data);
