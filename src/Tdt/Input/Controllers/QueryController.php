@@ -105,7 +105,8 @@ class QueryController extends \Controller
         // institutions collection
         $artists = $this->getCollection('artists');
 
-        $works = $this->getCollection('institutions');
+        $worksCol = $this->getCollection('institutions');
+        $objects = $this->getCollection('objects');
 
         // Define which properties we don't want
         $properties = array(
@@ -166,10 +167,59 @@ class QueryController extends \Controller
                     'created_at' => 0,
                     );
 
-                $worksCursor = $works->find($filter, $properties);
+                $worksCursor = $worksCol->find($filter, $properties);
+
+                $works = array();
+                // Match on equal workPid's
+                $PidtoSearch = array();
+                $DbNumberToIgnore = array();
+
+                foreach ($worksCursor as $work) {
+                    array_push($works, $work);
+
+                    if (!empty($work['workPid'][0]) && !in_array($work['workPid'][0], $PidtoSearch)) {
+                        // Push in Pid's to search
+                        array_push($PidtoSearch, $work['workPid'][0]);
+                    }
+
+                    if (!empty($work['databaseNumber']) && !in_array($work['databaseNumber'], $DbNumberToIgnore)) {
+                        array_push($DbNumberToIgnore, $work['databaseNumber']);
+                    }
+                }
+
+                // Query for other with same workPid
+                $filter = array('$and' => array(
+                        array('workPid' => array('$in' => $PidtoSearch)),
+                        array('databaseNumber' => array('$nin' => $DbNumberToIgnore))
+                    ));
+
+                // Find the works matching the filter
+                $worksCursor = $worksCol->find($filter, $properties);
+
+                foreach ($worksCursor as $work) {
+                    array_push($works, $work);
+                }
 
                 // Group on workPid and add the artist
-                foreach ($worksCursor as $work) {
+                foreach ($works as $work) {
+
+                    if (!empty($work['objectNameId'])) {
+
+                        $objectIDFilter = array('objectNameId' => array('$in' => $work['objectNameId']));
+                        $providerFilter = array('dataprovider' => $work['dataprovider']);
+
+                        $filter = array('$and' => array($objectIDFilter, $providerFilter));
+
+                        $objectCursor = $objects->find($filter, $properties);
+
+                        if (!array_key_exists('objects', $work)) {
+                            $work['objects'] = array();
+                        }
+
+                        foreach ($objectCursor as $object) {
+                            array_push($work['objects'], $object);
+                        }
+                    }
 
                     foreach ($work['workPid'] as $workPid) {
 
