@@ -34,6 +34,10 @@ class Packedartist extends AMapper
 
         // All values are possible multi values
         foreach ($chunk as $key => $value) {
+            // Prefix creatorId
+            if ($key == 'creatorId') {
+                $value =  strtolower($this->mapper->data_provider) . '_' . $value;
+            }
 
             if (!empty($value)) {
                 $chunk[$key] = explode(';', $value);
@@ -55,6 +59,7 @@ class Packedartist extends AMapper
         } else {
             $this->log('The provided creator column could not be found or is empty.', 'error');
         }
+
 
         // Add the original data provider
         $chunk['dataprovider'] = $this->mapper->data_provider;

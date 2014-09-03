@@ -45,7 +45,7 @@
                                         <div ng:if='enriched' ng:repeat='object in work_detail.objects' class='object'>
                                             <b>@{{ object.objectName[0] }}</b>
                                             <ul>
-                                                <li ng:if='object.objectNameAatPid[0]'>AAT PID: <a href='@{{ object.objectNameAatPid[0] }}' target='_blank'>@{{ object.objectNameAatPid[0] }}<a><br/></li>
+                                                <li ng:if='object.objectNameAatPid[0]'>AAT PID: <a href='@{{ object.objectNameAatPid[0] }}' target='_blank'>@{{ object.objectNameAatPid[0] }}</a><br/></li>
                                                 <li ng:if='object.AAT.note[0]'>
                                                     @{{ object.AAT.note[0] }}
                                                 </li>

@@ -60,6 +60,8 @@ class Packedartist extends ALoader
             if (!is_numeric($key)) {
                 $artist->$key = $value;
             }
+
+            dd($key);
         }
 
         try {
