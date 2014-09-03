@@ -16,6 +16,7 @@ use Packed\Institution;
 use Packed\Object;
 use MongoClient;
 use Tdt\Core\Datasets\Data;
+use Tdt\Core\Formatters\JSONFormatter;
 use Tdt\Core\Formatters\CSVFormatter;
 
 class InstitutionStatController extends \Controller
@@ -33,7 +34,7 @@ class InstitutionStatController extends \Controller
      *
      * @return array
      */
-    public function handle($n = 4)
+    public function handle($n = 10)
     {
         $data = new \stdClass();
 
@@ -47,34 +48,59 @@ class InstitutionStatController extends \Controller
         $institutions = $client->selectCollection(self::$DB_NAME, self::$COLLECTION);
 
         // Get the amount of 1 to n descriptions
-        for ($i = 2; $i <= $n; $i++) {
+        $descriptions = ($this->getNDescriptions($institutions));
 
-            $description = '1To' . $i . 'Description';
+        $objects = array();
+        foreach ($descriptions as $description) {
+            $object = new \stdClass();
+            $object->n = $description['_id'];
+            $object->count = $description['count'];
+            if ($object->n > 1) {
+                $object->workPids = $description['workPids'];
+            }
 
-            $data->$description = $this->getNDescriptions($institutions, $i);
+            array_push($objects, $object);
         }
+        $data->werken = $objects;
 
-        // Get the amount of 1 to n representations
-        for ($i = 2; $i <= $n; $i++) {
+        // Reps
+        $representations = ($this->getNRepresentations($institutions));
 
-            $representation = '1To' . $i . 'Representation';
+        $objects = array();
+        foreach ($representations as $representation) {
+            $object = new \stdClass();
+            $object->n = $representation['_id'];
+            $object->count = $representation['count'];
+            if ($object->n > 1) {
+                $object->workPids = $representation['workPids'];
+            }
 
-            $data->$representation = $this->getNRepresentations($institutions, $i);
+            array_push($objects, $object);
         }
+        $data->afbeeldingen = $objects;
 
-        // Get the amount of works that have 1 to n reps and 1 to n descriptions
-        for ($i = 2; $i <= $n; $i++) {
+        // Both
+        $both = ($this->getNRepAndDesc($institutions));
 
-            $repAndDesc = '1To' . $i . 'RepresentationAndDescription';
+        $objects = array();
+        foreach ($both as $obj) {
+            $object = new \stdClass();
+            $object->n = $obj['_id']['desc'];
+            $object->count = $obj['count'];
+            if ($object->n > 1) {
+                $object->workPids = $obj['workPids'];
+            }
 
-            $data->$repAndDesc = $this->getNRepAndDesc($institutions, $i);
+            array_push($objects, $object);
         }
+        $data->werkEnAfbeelding = $objects;
+
 
         $dataObject = new Data();
-        $dataObject->data = array($data);
+        $dataObject->data = $data;
         $dataObject->is_semantic = false;
 
-        $formatter = new CSVFormatter();
+        $formatter = new JSONFormatter();
 
         return $formatter->createResponse($dataObject);
     }
@@ -304,7 +330,7 @@ class InstitutionStatController extends \Controller
      *
      * @return int
      */
-    private function getNDescriptions($institutions, $n)
+    private function getNDescriptions($institutions)
     {
         $unwind = array('$unwind' => '$workPid');
 
@@ -326,29 +352,34 @@ class InstitutionStatController extends \Controller
                 );
 
         // Only pick out the $n sized ones
-        $match = array(
-                    '$match' => array(
-                        'size' => $n
-                    )
-                );
+        // $match = array(
+        //             '$match' => array(
+        //                 'size' => $n
+        //             )
+        //         );
 
         // Count the $n sized ones
         $count = array(
                     '$group' => array(
-                        '_id' => null,
+                        '_id' => '$size',
                         'count' => array(
                             '$sum' => 1
+                        ),
+                        'workPids' => array(
+                            '$addToSet' => '$_id'
                         )
                     )
                 );
 
-        $result = $institutions->aggregate($unwind, $group, $project, $match, $count);
+        $sort = array(
+                    '$sort' => array(
+                        '_id' => 1,
+                    )
+                );
 
-        if (!empty($result['result'][0]['count'])) {
-            return $result['result'][0]['count'];
-        } else {
-            return 0;
-        }
+        $result = $institutions->aggregate($unwind, $group, $project, $count, $sort);
+
+        return $result['result'];
     }
 
     /**
@@ -359,7 +390,7 @@ class InstitutionStatController extends \Controller
      *
      * @return int
      */
-    private function getNRepresentations($institutions, $n)
+    private function getNRepresentations($institutions)
     {
         $unwind = array('$unwind' => '$workPid');
 
@@ -380,30 +411,35 @@ class InstitutionStatController extends \Controller
                     )
                 );
 
-        // Only pick out the $n sized ones
-        $match = array(
-                    '$match' => array(
-                        'size' => $n
-                    )
-                );
+        // // Only pick out the $n sized ones
+        // $match = array(
+        //             '$match' => array(
+        //                 'size' => $n
+        //             )
+        //         );
 
         // Count the $n sized ones
         $count = array(
                     '$group' => array(
-                        '_id' => null,
+                        '_id' => '$size',
                         'count' => array(
                             '$sum' => 1
+                        ),
+                        'workPids' => array(
+                            '$addToSet' => '$_id'
                         )
                     )
                 );
 
-        $result = $institutions->aggregate($unwind, $group, $project, $match, $count);
+        $sort = array(
+                    '$sort' => array(
+                        '_id' => 1,
+                    )
+                );
 
-        if (!empty($result['result'][0]['count'])) {
-            return $result['result'][0]['count'];
-        } else {
-            return 0;
-        }
+        $result = $institutions->aggregate($unwind, $group, $project, $count, $sort);
+
+        return $result['result'];
     }
 
     /**
@@ -414,7 +450,7 @@ class InstitutionStatController extends \Controller
      *
      * @return int
      */
-    private function getNRepAndDesc($institutions, $n)
+    private function getNRepAndDesc($institutions)
     {
         $unwind = array('$unwind' => '$workPid');
 
@@ -439,31 +475,37 @@ class InstitutionStatController extends \Controller
                     )
                 );
 
-        // Only pick out the $n sized ones
-        $match = array(
-                    '$match' => array(
-                        'sizeRepresentation' => $n,
-                        'sizeDescription' => $n
-                    )
-                );
+        // // Only pick out the $n sized ones
+        // $match = array(
+        //             '$match' => array(
+        //                 'sizeRepresentation' => $n,
+        //                 'sizeDescription' => $n
+        //             )
+        //         );
 
         // Count the $n sized ones
         $count = array(
                     '$group' => array(
-                        '_id' => null,
+                        '_id' => array('desc' => '$sizeDescription', 'rep' => '$sizeDescription'),
                         'count' => array(
                             '$sum' => 1
+                        ),
+                        'workPids' => array(
+                            '$addToSet' => '$_id'
                         )
                     )
                 );
 
-        $result = $institutions->aggregate($unwind, $group, $project, $match, $count);
+        $sort = array(
+                    '$sort' => array(
+                        '_id' => 1,
+                    )
+                );
 
-        if (!empty($result['result'][0]['count'])) {
-            return $result['result'][0]['count'];
-        } else {
-            return 0;
-        }
+
+        $result = $institutions->aggregate($unwind, $group, $project, $count, $sort);
+
+        return $result['result'];
     }
 
     /**
