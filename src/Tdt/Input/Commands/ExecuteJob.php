@@ -8,13 +8,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Tdt\Input\Controllers\InputController;
 use Tdt\Input\EMLP\JobExecuter;
 
-/**
- * The ExecuteJobCommand class holds the functionality to execute a job
- *
- * @copyright (C) 2011,2013 by OKFN Belgium vzw/asbl
- * @license AGPLv3
- * @author Jan Vansteenlandt <jan@okfn.be>
- */
 class ExecuteJob extends Command
 {
 

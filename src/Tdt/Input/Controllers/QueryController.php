@@ -232,11 +232,16 @@ class QueryController extends \Controller
 
             if (!empty($work['objectNameId'])) {
 
-                $filter = array('objectNameId' => $work['objectNameId']);
+                $objectIDFilter = array('objectNameId' => array('$in' => $work['objectNameId']));
+                $providerFilter = array('dataprovider' => $work['dataprovider']);
+
+                $filter = array('$and' => array($objectIDFilter, $providerFilter));
 
                 $objectCursor = $objects->find($filter, $properties);
 
-                $work['objects'] = array();
+                if (!array_key_exists('objects', $work)) {
+                    $work['objects'] = array();
+                }
 
                 foreach ($objectCursor as $object) {
                     array_push($work['objects'], $object);
@@ -471,7 +476,10 @@ class QueryController extends \Controller
 
             if (!empty($work['objectNameId'])) {
 
-                $filter = array('objectNameId' => $work['objectNameId']);
+                $objectIDFilter = array('objectNameId' => array('$in' => $work['objectNameId']));
+                $providerFilter = array('dataprovider' => $work['dataprovider']);
+
+                $filter = array('$and' => array($objectIDFilter, $providerFilter));
 
                 $objectCursor = $objects->find($filter, $properties);
 

@@ -9,7 +9,7 @@ use MongoClient;
  */
 class Packedinstitution extends ALoader
 {
-     protected static $COLLECTION = 'institutions';
+    protected static $COLLECTION = 'institutions';
 
     protected static $DB_NAME = 'packed';
 

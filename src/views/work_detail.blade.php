@@ -39,27 +39,32 @@
                                 <tr>
                                     <td>Objectnaam</td>
                                     <td>
-                                        @{{ work_detail.objectName.join('; ') }}
-                                        <ul ng:if='enriched && work_detail.objects[0]'>
-                                            <li ng:if='work_detail.objects[0].objectNameAatPid[0]'>AAT PID: @{{ work_detail.objects[0].objectNameAatPid[0] }}<br/></li>
-                                            <li ng:if='work_detail.objects[0].AAT.note[0]'>
-                                                @{{ work_detail.objects[0].AAT.note[0] }}
-                                            </li>
-                                            <li ng:if='work_detail.objects[0].AAT.preferredNames.de[0] || work_detail.objects[0].AAT.preferredNames.en[0] || work_detail.objects[0].AAT.preferredNames.fr[0] || work_detail.objects[0].AAT.preferredNames.nl[0]'>
-                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.nl[0]'>
-                                                    nl: @{{ work_detail.objects[0].AAT.preferredNames.nl[0] }} <br/>
-                                                </span>
-                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.en[0]'>
-                                                    en: @{{ work_detail.objects[0].AAT.preferredNames.en[0] }} <br/>
-                                                </span>
-                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.fr[0]'>
-                                                    fr: @{{ work_detail.objects[0].AAT.preferredNames.fr[0] }} <br/>
-                                                </span>
-                                                <span ng:if='work_detail.objects[0].AAT.preferredNames.de[0]'>
-                                                    de: @{{ work_detail.objects[0].AAT.preferredNames.de[0] }}
-                                                </span>
-                                            </li>
-                                        </ul>
+                                        <span ng:if='!work_detail.objects[0].objectName[0]'>
+                                            @{{ work_detail.objectName.join('; ') }}
+                                        </span>
+                                        <div ng:if='enriched' ng:repeat='object in work_detail.objects' class='object'>
+                                            <b>@{{ object.objectName[0] }}</b>
+                                            <ul>
+                                                <li ng:if='object.objectNameAatPid[0]'>AAT PID: <a href='@{{ object.objectNameAatPid[0] }}' target='_blank'>@{{ object.objectNameAatPid[0] }}<a><br/></li>
+                                                <li ng:if='object.AAT.note[0]'>
+                                                    @{{ object.AAT.note[0] }}
+                                                </li>
+                                                <li ng:if='object.AAT.preferredNames.de[0] || object.AAT.preferredNames.en[0] || object.AAT.preferredNames.fr[0] || object.AAT.preferredNames.nl[0]'>
+                                                    <span ng:if='object.AAT.preferredNames.nl[0]'>
+                                                        nl: @{{ object.AAT.preferredNames.nl[0] }} <br/>
+                                                    </span>
+                                                    <span ng:if='object.AAT.preferredNames.en[0]'>
+                                                        en: @{{ object.AAT.preferredNames.en[0] }} <br/>
+                                                    </span>
+                                                    <span ng:if='object.AAT.preferredNames.fr[0]'>
+                                                        fr: @{{ object.AAT.preferredNames.fr[0] }} <br/>
+                                                    </span>
+                                                    <span ng:if='object.AAT.preferredNames.de[0]'>
+                                                        de: @{{ object.AAT.preferredNames.de[0] }}
+                                                    </span>
+                                                </li>
+                                            </ul>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>

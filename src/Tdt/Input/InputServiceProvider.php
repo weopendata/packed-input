@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Tdt\Input\Commands\Import;
 use Tdt\Input\Commands\Export;
 use Tdt\Input\Commands\ExecuteJob;
+use Tdt\Input\Commands\Packed;
 
 class InputServiceProvider extends ServiceProvider
 {
@@ -38,9 +39,14 @@ class InputServiceProvider extends ServiceProvider
             return new Import();
         });
 
+        $this->app['packed'] = $this->app->share(function ($app) {
+            return new Packed();
+        });
+
         $this->commands('input.export');
         $this->commands('input.execute');
         $this->commands('input.import');
+        $this->commands('packed');
 
         include __DIR__ . '/../../routes.php';
     }

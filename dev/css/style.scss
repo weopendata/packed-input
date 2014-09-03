@@ -120,6 +120,21 @@ fieldset{
     table{
         td{
             border-bottom: 1px solid #ededed;
+
+            div.object{
+                padding-top: 10px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee;
+
+                &:first-child{
+                    padding-top: 0px;
+                }
+
+                &:last-child{
+                    padding-bottom: 0px;
+                    border-bottom: none;
+                }
+            }
         }
 
         a{
