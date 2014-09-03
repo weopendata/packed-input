@@ -127,7 +127,7 @@ class InstitutionStatController extends \Controller
 
                 $data->$normHeader = $normalizedResults[$key];
             } else {
-                $data->nonNormalizedYear = '';
+                $data->normalizedYear = '';
                 $data->normHeader = '';
             }
 
@@ -166,29 +166,6 @@ class InstitutionStatController extends \Controller
     private function getNonNormWorksPerYear($institutions)
     {
         $data = array();
-
-        // Group all of the works per year
-        $group = array(
-                    '$group' => array(
-                        '_id' => '$dateStartValue',
-                        'works' => array('$addToSet' => '$workPid')
-                    )
-                );
-
-        // Calculate the size of the works
-        $count = array(
-                    '$project' => array(
-                        '_id' => 0,
-                        'date' => '$_id',
-                        'amount' => array(
-                            '$size' => '$works'
-                        )
-                    )
-                );
-
-        $sort = array(
-                    '$sort' => array('date' => 1)
-                );
 
         // Expand records per date
         $unwind = array('$unwind' => '$dateStartValue');
