@@ -123,9 +123,8 @@ class InstitutionStatController extends \Controller
 
                 $key = $normalizedKeys[$i];
 
-                $data->normalizedYear = $key;
-
-                $data->$normHeader = $normalizedResults[$key];
+                $data->normalizedYear = trim($key);
+                $data->normHeader = trim($normalizedResults[$key]);
             } else {
                 $data->normalizedYear = '';
                 $data->normHeader = '';
@@ -135,9 +134,8 @@ class InstitutionStatController extends \Controller
 
                 $key = $nonNormalizedKeys[$i];
 
-                $data->nonNormalizedYear = $key;
-
-                $data->$nonNormHeader = $nonNormalizedResults[$key];
+                $data->nonNormalizedYear = trim($key);
+                $data->nonNormHeader = trim($nonNormalizedResults[$key]);
             } else {
                 $data->nonNormalizedYear = '';
                 $data->nonNormHeader = '';
