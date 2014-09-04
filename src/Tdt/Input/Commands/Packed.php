@@ -5,6 +5,7 @@ namespace Tdt\Input\Commands;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
+use Job;
 
 class Packed extends Command
 {
@@ -30,7 +31,40 @@ class Packed extends Command
      */
     public function fire()
     {
-        $this->job;
+        $this->comment("\nPACKED DATALOADER");
+        $this->info("\nAvailable jobs:");
+
+        $jobs = Job::orderBy('collection_uri', 'asc')
+                   ->orderBy('name', 'asc')
+                   ->get();
+
+        $availableJobs = array();
+
+        $i = 1;
+        foreach ($jobs as $job) {
+            $job = $job->collection_uri . '/' . $job->name;
+            array_push($availableJobs, $job);
+
+            $this->line(" • " . $i . ") " . $job);
+            $i++;
+        }
+
+        $keys = array_keys($availableJobs);
+
+        $number = $this->ask("\nWhat job should I start? (number): ");
+        while (!in_array($number - 1, $keys)) {
+            $this->error("Sorry, that was not a valid number, try again!");
+            $number = $this->ask("What job should I start? (number): ");
+        }
+
+        $jobPicked = $availableJobs[$number - 1];
+        $this->info("\nStarting job #$number ($jobPicked):");
+
+        $this->call('input:execute', array('jobname' => $jobPicked));
+
+        $this->question("\n\nJob complete! Re-run the command to start a new job.\n");
+
+
         // $job_name = $this->argument('jobname');
 
         // list($collection_uri, $name) = InputController::getParts($job_name);
