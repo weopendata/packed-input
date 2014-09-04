@@ -39,7 +39,7 @@
                                 <tr>
                                     <td>Objectnaam</td>
                                     <td>
-                                        <span ng:if='!work_detail.objects[0].objectName[0]'>
+                                        <span ng:if='!work_detail.objects[0].objectName[0] || !enriched'>
                                             @{{ work_detail.objectName.join('; ') }}
                                         </span>
                                         <div ng:if='enriched' ng:repeat='object in work_detail.objects' class='object'>
