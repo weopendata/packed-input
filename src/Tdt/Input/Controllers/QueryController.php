@@ -225,15 +225,15 @@ class QueryController extends \Controller
 
                         if (empty($results['results'][$workPid])) {
                             $results['results'][$workPid] = array();
+
+                            // Count all of the works on workPid
+                            $results['count']++;
                         }
 
                         // Add the artist to the work
                         $work['artists'] = array($artist);
 
                         array_push($results['results'][$workPid], $work);
-
-                        // Count all of the works
-                        $results['count']++;
                     }
                 }
             }
