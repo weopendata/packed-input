@@ -498,6 +498,7 @@ class Packedartist extends AMapper
                                 'placeOfBirth' => array(),
                                 'dateOfDeath' => array(),
                                 'dateOfBirth' => array(),
+                                'literature' => array(),
                             );
 
             foreach ($chunk['creatorRkdPid'] as $link) {
@@ -576,6 +577,21 @@ class Packedartist extends AMapper
                     '
                 );
 
+                // Scrape the literature list
+                $literature = $crawler->filter(
+                    'ul#literature
+                    > li
+                    '
+                );
+
+                $literatureList = $literature->each(function ($node) {
+
+                    $book = trim(preg_replace('/\s\s+/', ' ', $node->text()));
+
+                    return $book;
+                });
+
+                $chunk['RKD']['literature'] = $literatureList;
 
                 // Parse the data from the siblings of the dt nodes
                 $bioData = $bio->each(function ($node) {
@@ -593,7 +609,6 @@ class Packedartist extends AMapper
                             if (!empty($bioText)) {
 
                                 $matches = array();
-
 
                                 // The dates are of different sorts (yyyy-mm-dd)
                                 preg_match('/(\d{4}-\d{2}-\d{2})/i', $bioText, $matches);
