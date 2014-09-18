@@ -330,7 +330,7 @@ class QueryController extends \Controller
 
             if (!empty($work['creatorId'])) {
 
-                $filter = array('creatorId' => $work['creatorId']);
+                $filter = array('creatorId' => array('$in' => $work['creatorId']));
 
                 $artistCursor = $artists->find($filter, $properties);
 
