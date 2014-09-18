@@ -82,54 +82,56 @@
                                 <tr>
                                     <td>Vervaardiger</td>
                                     <td>
-                                        @{{ work_detail.creator[0] }}
-                                        <ul ng:if='enriched && work_detail.artists[0]'>
-                                            <li ng:if='work_detail.artists[0].creatorRkdPid[0]'>
-                                                Rkd: <a href="@{{ work_detail.artists[0].creatorRkdPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorRkdPid[0] }}</a><br/>
-                                                <span ng:if='work_detail.artists[0].RKD.dateOfBirth[0] || work_detail.artists[0].RKD.placeOfBirth[0]'>
-                                                    ° @{{ work_detail.artists[0].RKD.dateOfBirth[0] }} @{{ work_detail.artists[0].RKD.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
-                                                </span>
-                                                <span ng:if='work_detail.artists[0].RKD.dateOfDeath[0] || work_detail.artists[0].RKD.placeOfDeath[0]'>
-                                                    &#8224; @{{ work_detail.artists[0].RKD.dateOfDeath[0] }} @{{ work_detail.artists[0].RKD.placeOfDeath[0] }}
-                                                </span>
-                                            </li>
-                                            <li ng:if='work_detail.artists[0].creatorViafPid[0]'>
-                                                Viaf: <a href="@{{ work_detail.artists[0].creatorViafPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorViafPid[0] }}</a><br/>
-                                                <span ng:if='work_detail.artists[0].VIAF.dateOfBirth[0] || work_detail.artists[0].VIAF.placeOfBirth[0]'>
-                                                    ° @{{ work_detail.artists[0].VIAF.dateOfBirth[0] }} @{{ work_detail.artists[0].VIAF.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
-                                                </span>
-                                                <span ng:if='work_detail.artists[0].VIAF.dateOfDeath[0] || work_detail.artists[0].VIAF.placeOfDeath[0]'>
-                                                    &#8224; @{{ work_detail.artists[0].VIAF.dateOfDeath[0] }} @{{ work_detail.artists[0].VIAF.placeOfDeath[0] }}
-                                                </span>
-                                            </li>
-                                            <li ng:if='work_detail.artists[0].creatorWikidataPid[0]'>
-                                                Wikidata: <a href="@{{ work_detail.artists[0].creatorWikidataPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorWikidataPid[0] }}</a><br/>
-                                                <span ng:if='work_detail.artists[0].Wikidata.dateOfBirth[0] || work_detail.artists[0].Wikidata.placeOfBirth[0]'>
-                                                    ° @{{ work_detail.artists[0].Wikidata.dateOfBirth[0] }} @{{ work_detail.artists[0].Wikidata.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
-                                                </span>
-                                                <span ng:if='work_detail.artists[0].Wikidata.dateOfDeath[0] || work_detail.artists[0].Wikidata.placeOfDeath[0]'>
-                                                    &#8224; @{{ work_detail.artists[0].Wikidata.dateOfDeath[0] }} @{{ work_detail.artists[0].Wikidata.placeOfDeath[0] }}
-                                                </span>
-                                            </li>
-                                            <li ng:if='work_detail.artists[0].creatorOdisPid[0]'>
-                                                Odis: <a href="@{{ work_detail.artists[0].creatorOdisPid[0] }}" target='_blank'>@{{ work_detail.artists[0].creatorOdisPid[0] }}</a>
-                                            </li>
-                                        </ul>
+                                        <div ng:repeat='artist in work_detail.artists'>
+                                            @{{ artist.creator[0] }}
+                                            <ul ng:if='enriched && artist'>
+                                                <li ng:if='artist.creatorRkdPid[0]'>
+                                                    Rkd: <a href="@{{ artist.creatorRkdPid[0] }}" target='_blank'>@{{ artist.creatorRkdPid[0] }}</a><br/>
+                                                    <span ng:if='artist.RKD.dateOfBirth[0] || artist.RKD.placeOfBirth[0]'>
+                                                        ° @{{ artist.RKD.dateOfBirth[0] }} @{{ artist.RKD.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    </span>
+                                                    <span ng:if='artist.RKD.dateOfDeath[0] || artist.RKD.placeOfDeath[0]'>
+                                                        &#8224; @{{ artist.RKD.dateOfDeath[0] }} @{{ artist.RKD.placeOfDeath[0] }}
+                                                    </span>
+                                                </li>
+                                                <li ng:if='artist.creatorViafPid[0]'>
+                                                    Viaf: <a href="@{{ artist.creatorViafPid[0] }}" target='_blank'>@{{ artist.creatorViafPid[0] }}</a><br/>
+                                                    <span ng:if='artist.VIAF.dateOfBirth[0] || artist.VIAF.placeOfBirth[0]'>
+                                                        ° @{{ artist.VIAF.dateOfBirth[0] }} @{{ artist.VIAF.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    </span>
+                                                    <span ng:if='artist.VIAF.dateOfDeath[0] || artist.VIAF.placeOfDeath[0]'>
+                                                        &#8224; @{{ artist.VIAF.dateOfDeath[0] }} @{{ artist.VIAF.placeOfDeath[0] }}
+                                                    </span>
+                                                </li>
+                                                <li ng:if='artist.creatorWikidataPid[0]'>
+                                                    Wikidata: <a href="@{{ artist.creatorWikidataPid[0] }}" target='_blank'>@{{ artist.creatorWikidataPid[0] }}</a><br/>
+                                                    <span ng:if='artist.Wikidata.dateOfBirth[0] || artist.Wikidata.placeOfBirth[0]'>
+                                                        ° @{{ artist.Wikidata.dateOfBirth[0] }} @{{ artist.Wikidata.placeOfBirth[0] }} &nbsp;&nbsp;&nbsp;&nbsp;
+                                                    </span>
+                                                    <span ng:if='artist.Wikidata.dateOfDeath[0] || artist.Wikidata.placeOfDeath[0]'>
+                                                        &#8224; @{{ artist.Wikidata.dateOfDeath[0] }} @{{ artist.Wikidata.placeOfDeath[0] }}
+                                                    </span>
+                                                </li>
+                                                <li ng:if='artist.creatorOdisPid[0]'>
+                                                    Odis: <a href="@{{ artist.creatorOdisPid[0] }}" target='_blank'>@{{ artist.creatorOdisPid[0] }}</a>
+                                                </li>
+                                            </ul>
 
-                                        <div ng:if='enriched && work_detail.artists[0].uniqueNameVariants[0]'>
-                                            <br/>
-                                            @{{ work_detail.artists[0].uniqueNameVariants.join('; ') }}
+                                            <div ng:if='enriched && artist.uniqueNameVariants[0]'>
+                                                <br/>
+                                                @{{ artist.uniqueNameVariants.join('; ') }}
+                                            </div>
+
+                                            <div ng:if='enriched && artist.RKD.literature[0]'>
+                                                <br/>
+                                                <b>Literatuurlijst</b>
+                                                <ul>
+                                                    <li ng:repeat='book in artist.RKD.literature'>
+                                                        @{{ book }}
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
-                                    </td>
-                                </tr>
-                                <tr ng:if='enriched && work_detail.artists[0].RKD.literature[0]'>
-                                    <td>Literatuurlijst</td>
-                                    <td>
-                                        <ul>
-                                            <li ng:repeat='book in work_detail.artists[0].RKD.literature'>
-                                                @{{ book }}
-                                            </li>
-                                        </ul>
                                     </td>
                                 </tr>
                                 <tr>
