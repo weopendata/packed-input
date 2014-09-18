@@ -6,4 +6,4 @@ time=$(date +"%H_%M_%S")
 mongodump --db packed --out "/home/packed/www/backups/backup_${date}_-_${time}"
 
 # Run command
-php /home/packed/www/core/artisan packed
+php /home/packed/www/core/artisan packed $1

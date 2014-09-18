@@ -32,57 +32,49 @@ class Packed extends Command
     public function fire()
     {
         $this->comment("\nPACKED DATALOADER");
-        $this->info("\nAvailable jobs:");
 
         $jobs = Job::orderBy('collection_uri', 'asc')
                    ->orderBy('name', 'asc')
                    ->get();
 
-        $availableJobs = array();
+        if ($this->argument('all')) {
+            foreach ($jobs as $job) {
+                $job_uri = $job->collection_uri . '/' . $job->name;
+                $this->call('input:execute', array('jobname' => $job_uri));
 
-        $i = 1;
-        foreach ($jobs as $job) {
-            $job = $job->collection_uri . '/' . $job->name;
-            array_push($availableJobs, $job);
+                $this->question("\n\n***********************\n");
+                $this->question("\nJob complete! Next job!.\n");
+                $this->question("\n***********************\n");
+            }
+            $this->question("\n\nAll jobs completed!");
+        } else {
+            $this->info("\nAvailable jobs:");
+            $availableJobs = array();
 
-            $this->line(" • " . $i . ") " . $job);
-            $i++;
+            $i = 1;
+            foreach ($jobs as $job) {
+                $job = $job->collection_uri . '/' . $job->name;
+                array_push($availableJobs, $job);
+
+                $this->line(" • " . $i . ") " . $job);
+                $i++;
+            }
+
+            $keys = array_keys($availableJobs);
+
+            $number = $this->ask("\nWhat job should I start? (number): ");
+            while (!in_array($number - 1, $keys)) {
+                $this->error("Sorry, that was not a valid number, try again!");
+                $number = $this->ask("What job should I start? (number): ");
+            }
+
+            $jobPicked = $availableJobs[$number - 1];
+            $this->info("\nStarting job #$number ($jobPicked):");
+
+            $this->call('input:execute', array('jobname' => $jobPicked));
+
+            $this->question("\n\nJob complete! Re-run the command to start a new job.\n");
         }
-
-        $keys = array_keys($availableJobs);
-
-        $number = $this->ask("\nWhat job should I start? (number): ");
-        while (!in_array($number - 1, $keys)) {
-            $this->error("Sorry, that was not a valid number, try again!");
-            $number = $this->ask("What job should I start? (number): ");
-        }
-
-        $jobPicked = $availableJobs[$number - 1];
-        $this->info("\nStarting job #$number ($jobPicked):");
-
-        $this->call('input:execute', array('jobname' => $jobPicked));
-
-        $this->question("\n\nJob complete! Re-run the command to start a new job.\n");
-
-
-        // $job_name = $this->argument('jobname');
-
-        // list($collection_uri, $name) = InputController::getParts($job_name);
-
-        // // Check if the job exists
-        // $job = \Job::where('name', '=', $name)
-        //            ->where('collection_uri', '=', $collection_uri)
-        //            ->first();
-
-        // if (empty($job)) {
-        //     $this->error("The job with identified by: $job_name could not be found.\n");
-        //     exit();
-        // }
-
-        // $this->line('The job has been found.');
-
-        // $job_exec = new JobExecuter($job, $this);
-        // $job_exec->execute();
     }
 
     /**
@@ -93,7 +85,7 @@ class Packed extends Command
     protected function getArguments()
     {
         return array(
-            // array('jobname', InputArgument::REQUIRED, 'Full name of the job that needs to be executed. (the uri that was given to PUT the meta-data for this job).'),
+            array('all', InputArgument::OPTIONAL, 'Run all the jobs?'),
         );
     }
 
