@@ -47,11 +47,6 @@ class Packedinstitution extends AMapper
 
         foreach ($multiValues as $key) {
 
-            // Prefix creatorId
-            if ($key == 'creatorId') {
-                $chunk[$key] =  strtolower($this->mapper->data_provider) . '_' . $chunk[$key];
-            }
-
             if (array_key_exists($key, $chunk)) {
                 if (!empty($chunk[$key])) {
 
@@ -59,6 +54,14 @@ class Packedinstitution extends AMapper
                 } else {
 
                     $chunk[$key] = array();
+                }
+            }
+
+            // Prefix creatorId
+            if ($key == 'creatorId') {
+
+                foreach ($chunk[$key] as $index => $creatorId) {
+                    $chunk[$key][$index] = strtolower($this->mapper->data_provider) . '_' . $creatorId;
                 }
             }
         }
