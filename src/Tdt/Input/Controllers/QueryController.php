@@ -145,6 +145,7 @@ class QueryController extends \Controller
 
         // Per artist, get the resulting works and group them per WorkPid
         foreach ($artistCursor as $artist) {
+
             if (!empty($artist['creatorId'])) {
 
                 // Foreach artist, search for accompanying works
@@ -170,6 +171,7 @@ class QueryController extends \Controller
                 $worksCursor = $worksCol->find($filter, $properties);
 
                 $works = array();
+
                 // Match on equal workPid's
                 $PidtoSearch = array();
                 $DbNumberToIgnore = array();
@@ -233,7 +235,19 @@ class QueryController extends \Controller
                         // Add the artist to the work
                         $work['artists'] = array($artist);
 
-                        array_push($results['results'][$workPid], $work);
+                        // Remove doubles
+                        $present = false;
+
+                        foreach ($results['results'][$workPid] as $w) {
+                            if ($w['dataPid'] == $work['dataPid']) {
+                                $present = true;
+                                break;
+                            }
+                        }
+
+                        if (!$present) {
+                            array_push($results['results'][$workPid], $work);
+                        }
                     }
                 }
             }
