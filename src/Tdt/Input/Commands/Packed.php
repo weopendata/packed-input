@@ -40,11 +40,20 @@ class Packed extends Command
         if ($this->argument('all')) {
             foreach ($jobs as $job) {
                 $job_uri = $job->collection_uri . '/' . $job->name;
-                $this->call('input:execute', array('jobname' => $job_uri));
+                try {
+                    $this->call('input:execute', array('jobname' => $job_uri));
 
-                $this->question("\n\n***********************\n");
-                $this->question("\nJob complete! Next job!.\n");
-                $this->question("\n***********************\n");
+
+                    $this->question("\n\n***********************\n");
+                    $this->question("Job complete! Next job!\n");
+                    $this->question("***********************\n");
+                } catch(\ErrorException $e) {
+                    $this->error("\n\n***********************\n");
+                    $this->error("Something went wrong while running the job $job_uri\n");
+                    $this->error($e->getMessage());
+                    $this->error("\nSkipping and starting next job!");
+                    $this->error("\n***********************\n");
+                }
             }
             $this->question("\n\nAll jobs completed!");
         } else {
