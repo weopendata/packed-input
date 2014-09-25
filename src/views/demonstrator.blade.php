@@ -51,6 +51,8 @@
                             <option value="CVG">CVG</option>
                             <option value="Middelheimmuseum">Middelheimmuseum</option>
                             <option value="MSKGent">MSKGent</option>
+                            <option value="KMSKA">KMSKA</option>
+                            <option value="Muzee">MuZee</option>
                         </select>
                     </div>
                 </div>
