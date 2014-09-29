@@ -312,7 +312,7 @@ class InstitutionStatController extends \Controller
                     '$sort' => array('date' => 1)
                 );
 
-        $result = $institutions->aggregate($unwind, $group, $project, $sort);
+        $result = $institutions->aggregate(array($unwind, $group, $project, $sort), array('allowDiskUse' => true));
 
         // Build an assoc array where the amount of work
         foreach ($result['result'] as $date) {
